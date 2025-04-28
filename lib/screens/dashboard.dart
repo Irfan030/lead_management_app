@@ -10,7 +10,7 @@ import 'activity_screen.dart';
 import 'contact_screen.dart';
 import 'customer/customer_screen.dart';
 import 'invoices_screen.dart';
-import 'opportunity_screen.dart';
+import 'opportunity/opportunity_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -70,7 +70,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       case 'Customer':
         return CustomerListScreen();
       case 'Opportunity':
-        return OpportunityScreen();
+        return OpportunityListScreen();
       case 'Quotation/Order':
         return QuotationScreen();
       case 'Invoices':

@@ -96,7 +96,8 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        backgroundColor: AppColor.scaffoldBackground,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         elevation: 10,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -109,6 +110,7 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
+                  color: AppColor.textPrimary,
                 ),
               ),
               const SizedBox(height: 12),
@@ -158,7 +160,7 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
+                  backgroundColor: AppColor.mainColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -287,7 +289,7 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       color: AppColor.cardBackground,
-                      border: Border.all(color: AppColor.borderColor),
+                      border: Border.all(color: AppColor.mainColor, width: 1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(

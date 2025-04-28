@@ -1,17 +1,16 @@
+// 1. First, create Opportunity Model
 class Opportunity {
-  final String id;
   final String name;
-  final String customer;
-  final double amount;
+  final String company;
+  final String date;
   final String stage;
-  final DateTime expectedClose;
+  final double expectedRevenue;
 
   Opportunity({
-    required this.id,
     required this.name,
-    required this.customer,
-    required this.amount,
+    required this.company,
+    required this.date,
     required this.stage,
-    required this.expectedClose,
+    required this.expectedRevenue,
   });
 }

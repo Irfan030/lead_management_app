@@ -1,16 +1,3 @@
-// class Customer {
-//   final String name;
-//   final String address;
-//   final String phone;
-//   final String? imageUrl; // optional
-//
-//   Customer({
-//     required this.name,
-//     required this.address,
-//     required this.phone,
-//     this.imageUrl,
-//   });
-// }
 enum LeadStatus { newLead, contacted, converted }
 
 enum LeadTag { hot, cold, interested, notInterested }
@@ -21,6 +8,7 @@ class Customer {
   final String name;
   final String address;
   final String phone;
+  final String? companyName;
   final String? email;
   final String? imageUrl;
   final LeadStatus status;
@@ -35,6 +23,7 @@ class Customer {
     required this.address,
     required this.phone,
     this.email,
+    this.companyName,
     this.imageUrl,
     this.status = LeadStatus.newLead,
     this.tag = LeadTag.cold,

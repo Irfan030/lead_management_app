@@ -2,8 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slider_drawer/flutter_slider_drawer.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:leads_management_app/menu/menu_widget.dart';
+import 'package:leads_management_app/screens/quotation_order_screen.dart';
+import 'package:leads_management_app/screens/reports_screen.dart';
 
 import '../widgets/pie_chart_widget.dart';
+import 'activity_screen.dart';
+import 'contact_screen.dart';
+import 'customer/customer_screen.dart';
+import 'invoices_screen.dart';
+import 'opportunity_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -18,48 +25,66 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Widget body;
-    switch (_currentScreen) {
-      case 'Leads':
-        body = const LeadsScreen();
-        break;
-      case 'Reports':
-        body = const ReportsScreen();
-        break;
-      default:
-        body = _dashboardBody();
-    }
+    Widget body = _getScreen(_currentScreen);
 
     return Scaffold(
-      body: SliderDrawer(
-        key: _key,
-        sliderOpenSize: 200,
-        appBar: SliderAppBar(
-          config: SliderAppBarConfig(
-            title: Text(
-              _currentScreen,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                color: Colors.black,
+      body: SafeArea(
+        child: SliderDrawer(
+          key: _key,
+          sliderOpenSize: 200,
+          appBar: SliderAppBar(
+            config: SliderAppBarConfig(
+              title: Text(
+                _currentScreen,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black,
+                ),
               ),
+              backgroundColor: Colors.white,
+              drawerIconColor: Colors.black,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
             ),
-            backgroundColor: Colors.white,
-            drawerIconColor: Colors.black,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
           ),
+          slider: MenuWidget(
+            onItemClick: (title) {
+              if (title == 'Logout') {
+                _showLogoutConfirmation();
+              } else {
+                setState(() {
+                  _currentScreen = title;
+                });
+                _key.currentState?.closeSlider();
+              }
+            },
+          ),
+          child: body,
         ),
-        slider: MenuWidget(
-          onItemClick: (title) {
-            setState(() {
-              _currentScreen = title;
-            });
-            _key.currentState?.closeSlider();
-          },
-        ),
-        child: body,
       ),
     );
+  }
+
+  Widget _getScreen(String screen) {
+    switch (screen) {
+      case 'Customer':
+        return CustomerListScreen();
+      case 'Opportunity':
+        return OpportunityScreen();
+      case 'Quotation/Order':
+        return QuotationScreen();
+      case 'Invoices':
+        return InvoicesScreen();
+      case 'Activity':
+        return ActivityScreen();
+      case 'Reports':
+        return ReportsScreen();
+      case 'Contact':
+        return ContactInfo();
+      case 'Dashboard':
+      default:
+        return _dashboardBody();
+    }
   }
 
   Widget _dashboardBody() {
@@ -194,7 +219,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Column(
             children: [
               Text(
-                "Top 5 Opportunity",
+                "Top 5 Opportunities",
                 style: GoogleFonts.poppins(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
@@ -223,10 +248,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ],
                   ),
                 );
-              }).toList(),
+              }),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showLogoutConfirmation() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Logout'),
+        content: const Text('Are you sure you want to logout?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              // Add your logout logic here
+              Navigator.of(context).pushReplacementNamed('/login');
+            },
+            child: const Text('Logout'),
+          ),
+        ],
       ),
     );
   }

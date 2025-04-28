@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-class ContactScreen extends StatelessWidget {
-  const ContactScreen({super.key});
+class ContactInfo extends StatelessWidget {
+  const ContactInfo({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: Text('Contact')));
+    return const Center(child: Text('Contact Screen'));
   }
 }

@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slider_drawer/flutter_slider_drawer.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:leads_management_app/menu/menu_widget.dart';
-import 'package:leads_management_app/screens/quotation_order_screen.dart';
+import 'package:leads_management_app/screens/quotation/quotation_order_screen.dart';
 import 'package:leads_management_app/screens/reports_screen.dart';
 
 import '../widgets/pie_chart_widget.dart';
-import 'activity_screen.dart';
+import 'activity/activity_screen.dart';
 import 'contact_screen.dart';
 import 'customer/customer_screen.dart';
-import 'invoices_screen.dart';
+import 'invoice/invoices_screen.dart';
 import 'opportunity/opportunity_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -72,7 +72,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       case 'Opportunity':
         return OpportunityListScreen();
       case 'Quotation/Order':
-        return QuotationScreen();
+        return QuotationOrderScreen();
       case 'Invoices':
         return InvoicesScreen();
       case 'Activity':

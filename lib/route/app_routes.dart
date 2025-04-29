@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:leads_management_app/route/routePath.dart';
 import 'package:leads_management_app/screens/customer/customer_screen.dart';
 import 'package:leads_management_app/screens/dashboard.dart';
-import 'package:leads_management_app/screens/invoices_screen.dart';
-import 'package:leads_management_app/screens/quotation_order_screen.dart';
+import 'package:leads_management_app/screens/invoice/invoices_screen.dart';
+import 'package:leads_management_app/screens/quotation/quotation_order_screen.dart';
 import 'package:leads_management_app/screens/reports_screen.dart';
 
 class AppRoute {
@@ -17,7 +17,7 @@ class AppRoute {
         return MaterialPageRoute(builder: (_) => const CustomerListScreen());
 
       case RoutePath.quotation:
-        return MaterialPageRoute(builder: (_) => QuotationScreen());
+        return MaterialPageRoute(builder: (_) => QuotationOrderScreen());
       case RoutePath.invoices:
         return MaterialPageRoute(builder: (_) => InvoicesScreen());
 

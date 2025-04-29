@@ -3,7 +3,7 @@ import 'package:flutter_slider_drawer/flutter_slider_drawer.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:leads_management_app/menu/menu_widget.dart';
 import 'package:leads_management_app/screens/quotation/quotation_order_screen.dart';
-import 'package:leads_management_app/screens/reports_screen.dart';
+import 'package:leads_management_app/screens/report/reports_screen.dart';
 
 import '../widgets/pie_chart_widget.dart';
 import 'activity/activity_screen.dart';

@@ -1,319 +1,982 @@
+// import 'package:flutter/material.dart';
+// import 'package:intl/intl.dart';
+// import 'package:leads_management_app/theme/colors.dart';
+//
+// class ActivityScreen extends StatefulWidget {
+//   @override
+//   _ActivityScreenState createState() => _ActivityScreenState();
+// }
+//
+// class _ActivityScreenState extends State<ActivityScreen> {
+//   List<Activity> activities = [
+//     Activity(
+//       title: 'Cold Call',
+//       details:
+//           'Reached out to discuss product demo. Lead showed interest in pricing.',
+//       dateTime: DateTime.now().subtract(Duration(days: 3)),
+//       isCompleted: true,
+//     ),
+//     Activity(
+//       title: 'Send Proposal',
+//       details:
+//           'Shared pricing and contract details via email. Awaiting response.',
+//       dateTime: DateTime.now(),
+//       isCompleted: false,
+//     ),
+//     Activity(
+//       title: 'Product Demo',
+//       details: 'Scheduled Zoom call for a live demo on Friday at 2 PM.',
+//       dateTime: DateTime.now().add(Duration(days: 1)),
+//       isCompleted: false,
+//     ),
+//   ];
+//
+//   DateTime currentDate = DateTime.now(); // holds current month & year
+//   int? selectedDay; // holds selected day (date)
+//
+//   List<int> getDaysInMonth(DateTime date) {
+//     final firstDay = DateTime(date.year, date.month, 1);
+//     final lastDay = DateTime(date.year, date.month + 1, 0);
+//     return List<int>.generate(lastDay.day, (i) => i + 1);
+//   }
+//
+//   List<Activity> get filteredActivities {
+//     return activities.where((activity) {
+//       if (selectedDay == null) return true;
+//       return activity.dateTime.year == currentDate.year &&
+//           activity.dateTime.month == currentDate.month &&
+//           activity.dateTime.day == selectedDay;
+//     }).toList();
+//   }
+//
+//   void _changeMonth(int offset) {
+//     setState(() {
+//       currentDate = DateTime(currentDate.year, currentDate.month + offset);
+//       selectedDay = null; // Reset day when changing month
+//     });
+//   }
+//
+//   void _showActivityBottomSheet({Activity? existingActivity, int? index}) {
+//     final TextEditingController nameController = TextEditingController(
+//       text: existingActivity != null ? existingActivity.title : '',
+//     );
+//     final TextEditingController detailsController = TextEditingController(
+//       text: existingActivity != null ? existingActivity.details : '',
+//     );
+//
+//     DateTime selectedDate = existingActivity?.dateTime ?? DateTime.now();
+//     TimeOfDay selectedTime = existingActivity != null
+//         ? TimeOfDay.fromDateTime(existingActivity.dateTime)
+//         : TimeOfDay.now();
+//
+//     showModalBottomSheet(
+//       context: context,
+//       isScrollControlled: true,
+//       shape: RoundedRectangleBorder(
+//         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+//       ),
+//       builder: (context) {
+//         return Padding(
+//           padding: EdgeInsets.only(
+//             bottom: MediaQuery.of(context).viewInsets.bottom,
+//           ),
+//           child: StatefulBuilder(
+//             builder: (context, setSheetState) {
+//               return SingleChildScrollView(
+//                 padding: const EdgeInsets.all(20),
+//                 child: Column(
+//                   mainAxisSize: MainAxisSize.min,
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     Container(
+//                       decoration: BoxDecoration(
+//                         color: Colors.grey[200],
+//                         borderRadius: BorderRadius.circular(12),
+//                       ),
+//                       padding: const EdgeInsets.symmetric(horizontal: 12),
+//                       child: TextField(
+//                         controller: nameController,
+//                         decoration: const InputDecoration(
+//                           border: InputBorder.none,
+//                           hintText: 'Follow - Ups task name',
+//                         ),
+//                       ),
+//                     ),
+//                     const SizedBox(height: 15),
+//                     Container(
+//                       decoration: BoxDecoration(
+//                         color: Colors.grey[200],
+//                         borderRadius: BorderRadius.circular(12),
+//                       ),
+//                       padding: const EdgeInsets.symmetric(horizontal: 12),
+//                       child: TextField(
+//                         controller: detailsController,
+//                         maxLines: 4,
+//                         decoration: const InputDecoration(
+//                           border: InputBorder.none,
+//                           hintText: 'Details',
+//                         ),
+//                       ),
+//                     ),
+//                     const SizedBox(height: 20),
+//                     const Text(
+//                       'When to remind?',
+//                       style: TextStyle(
+//                         fontWeight: FontWeight.bold,
+//                         fontSize: 16,
+//                       ),
+//                     ),
+//                     const SizedBox(height: 15),
+//                     Row(
+//                       children: [
+//                         Expanded(
+//                           child: GestureDetector(
+//                             onTap: () async {
+//                               final DateTime? picked = await showDatePicker(
+//                                 context: context,
+//                                 initialDate: selectedDate,
+//                                 firstDate: DateTime(2000),
+//                                 lastDate: DateTime(2101),
+//                               );
+//                               if (picked != null) {
+//                                 setSheetState(() => selectedDate = picked);
+//                               }
+//                             },
+//                             child: Container(
+//                               padding: const EdgeInsets.symmetric(
+//                                 vertical: 14,
+//                                 horizontal: 12,
+//                               ),
+//                               decoration: BoxDecoration(
+//                                 color: Colors.grey[200],
+//                                 borderRadius: BorderRadius.circular(12),
+//                               ),
+//                               child: Row(
+//                                 children: [
+//                                   const Icon(
+//                                     Icons.date_range,
+//                                     color: Colors.blue,
+//                                   ),
+//                                   const SizedBox(width: 10),
+//                                   Text(
+//                                     DateFormat(
+//                                       'dd MMM, yyyy',
+//                                     ).format(selectedDate),
+//                                   ),
+//                                 ],
+//                               ),
+//                             ),
+//                           ),
+//                         ),
+//                         const SizedBox(width: 15),
+//                         Expanded(
+//                           child: GestureDetector(
+//                             onTap: () async {
+//                               final TimeOfDay? picked = await showTimePicker(
+//                                 context: context,
+//                                 initialTime: selectedTime,
+//                               );
+//                               if (picked != null) {
+//                                 setSheetState(() => selectedTime = picked);
+//                               }
+//                             },
+//                             child: Container(
+//                               padding: const EdgeInsets.symmetric(
+//                                 vertical: 14,
+//                                 horizontal: 12,
+//                               ),
+//                               decoration: BoxDecoration(
+//                                 color: Colors.grey[200],
+//                                 borderRadius: BorderRadius.circular(12),
+//                               ),
+//                               child: Row(
+//                                 children: [
+//                                   const Icon(
+//                                     Icons.access_time,
+//                                     color: Colors.blue,
+//                                   ),
+//                                   const SizedBox(width: 10),
+//                                   Text(selectedTime.format(context)),
+//                                 ],
+//                               ),
+//                             ),
+//                           ),
+//                         ),
+//                       ],
+//                     ),
+//                     const SizedBox(height: 20),
+//                     Row(
+//                       children: [
+//                         if (existingActivity != null)
+//                           Expanded(
+//                             child: ElevatedButton(
+//                               onPressed: () {
+//                                 setState(() {
+//                                   activities.removeAt(index!);
+//                                 });
+//                                 Navigator.pop(context);
+//                               },
+//                               style: ElevatedButton.styleFrom(
+//                                 backgroundColor: Colors.red,
+//                                 shape: RoundedRectangleBorder(
+//                                   borderRadius: BorderRadius.circular(12),
+//                                 ),
+//                               ),
+//                               child: const Text('DELETE'),
+//                             ),
+//                           ),
+//                         if (existingActivity != null) const SizedBox(width: 15),
+//                         Expanded(
+//                           child: ElevatedButton(
+//                             onPressed: () {
+//                               final newDateTime = DateTime(
+//                                 selectedDate.year,
+//                                 selectedDate.month,
+//                                 selectedDate.day,
+//                                 selectedTime.hour,
+//                                 selectedTime.minute,
+//                               );
+//                               final newActivity = Activity(
+//                                 title: nameController.text.trim(),
+//                                 details: detailsController.text.trim(),
+//                                 dateTime: newDateTime,
+//                               );
+//                               setState(() {
+//                                 if (existingActivity != null) {
+//                                   activities[index!] = newActivity;
+//                                 } else {
+//                                   activities.add(newActivity);
+//                                 }
+//                               });
+//                               Navigator.pop(context);
+//                             },
+//                             style: ElevatedButton.styleFrom(
+//                               backgroundColor: Colors.blue,
+//                               shape: RoundedRectangleBorder(
+//                                 borderRadius: BorderRadius.circular(12),
+//                               ),
+//                             ),
+//                             child: const Text('SAVE'),
+//                           ),
+//                         ),
+//                       ],
+//                     ),
+//                   ],
+//                 ),
+//               );
+//             },
+//           ),
+//         );
+//       },
+//     );
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     final daysInMonth = getDaysInMonth(currentDate);
+//
+//     return Scaffold(
+//       backgroundColor: AppColor.scaffoldBackground,
+//       body: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           // ✅ Month Selector UI
+//           Container(
+//             color: AppColor.mainColor,
+//             child: Column(
+//               children: [
+//                 Padding(
+//                   padding: const EdgeInsets.symmetric(
+//                     horizontal: 16,
+//                     vertical: 5,
+//                   ),
+//                   child: Row(
+//                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                     children: [
+//                       Text(
+//                         DateFormat('MMMM yyyy').format(currentDate),
+//                         style: TextStyle(
+//                           color: AppColor.scaffoldBackground,
+//                           fontSize: 18,
+//                           fontWeight: FontWeight.bold,
+//                         ),
+//                       ),
+//                       Row(
+//                         children: [
+//                           IconButton(
+//                             icon: const Icon(
+//                               Icons.arrow_back_ios_new,
+//                               color: AppColor.scaffoldBackground,
+//                             ),
+//                             onPressed: () => _changeMonth(-1),
+//                           ),
+//                           IconButton(
+//                             icon: Icon(
+//                               Icons.arrow_forward_ios_outlined,
+//                               color: AppColor.scaffoldBackground,
+//                             ),
+//                             onPressed: () => _changeMonth(1),
+//                           ),
+//                         ],
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//
+//                 // ✅ Days Strip UI
+//                 SizedBox(
+//                   height: 80,
+//                   child: ListView.builder(
+//                     scrollDirection: Axis.horizontal,
+//                     padding: const EdgeInsets.symmetric(
+//                       horizontal: 16,
+//                       vertical: 10,
+//                     ),
+//                     itemCount: daysInMonth.length,
+//                     itemBuilder: (context, index) {
+//                       final day = daysInMonth[index];
+//                       final date = DateTime(
+//                         currentDate.year,
+//                         currentDate.month,
+//                         day,
+//                       );
+//                       final isSelected = selectedDay == day;
+//
+//                       return GestureDetector(
+//                         onTap: () {
+//                           setState(() {
+//                             selectedDay = day;
+//                           });
+//                         },
+//                         child: Container(
+//                           width: 60,
+//                           margin: const EdgeInsets.only(right: 10),
+//                           decoration: BoxDecoration(
+//                             color: isSelected ? Colors.blue : Colors.grey[200],
+//                             borderRadius: BorderRadius.circular(12),
+//                           ),
+//                           child: Column(
+//                             mainAxisAlignment: MainAxisAlignment.center,
+//                             children: [
+//                               Text(
+//                                 DateFormat('E').format(date), // e.g., Wed
+//                                 style: TextStyle(
+//                                   color: isSelected
+//                                       ? Colors.white
+//                                       : Colors.black,
+//                                   fontWeight: FontWeight.w500,
+//                                 ),
+//                               ),
+//                               const SizedBox(height: 5),
+//                               Text(
+//                                 '$day',
+//                                 style: TextStyle(
+//                                   color: isSelected
+//                                       ? Colors.white
+//                                       : Colors.black,
+//                                   fontWeight: FontWeight.bold,
+//                                 ),
+//                               ),
+//                             ],
+//                           ),
+//                         ),
+//                       );
+//                     },
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           ),
+//
+//           // ✅ Activities List or No Activity
+//           Expanded(
+//             child: filteredActivities.isEmpty
+//                 ? const Center(
+//                     child: Text(
+//                       'No activities available',
+//                       style: TextStyle(fontSize: 16, color: Colors.grey),
+//                     ),
+//                   )
+//                 : ListView.builder(
+//                     padding: const EdgeInsets.only(top: 10),
+//                     itemCount: filteredActivities.length,
+//                     itemBuilder: (context, index) {
+//                       final activity = filteredActivities[index];
+//                       return GestureDetector(
+//                         onTap: () {
+//                           // You can open bottom sheet here if needed
+//                         },
+//                         child: Card(
+//                           color: activity.isCompleted
+//                               ? Colors.grey.shade300
+//                               : Colors.white,
+//                           margin: const EdgeInsets.symmetric(
+//                             horizontal: 16,
+//                             vertical: 8,
+//                           ),
+//                           shape: RoundedRectangleBorder(
+//                             borderRadius: BorderRadius.circular(12),
+//                           ),
+//                           child: Padding(
+//                             padding: const EdgeInsets.all(12),
+//                             child: Column(
+//                               crossAxisAlignment: CrossAxisAlignment.start,
+//                               children: [
+//                                 Text(
+//                                   activity.title,
+//                                   style: const TextStyle(
+//                                     fontSize: 16,
+//                                     fontWeight: FontWeight.bold,
+//                                   ),
+//                                 ),
+//                                 const SizedBox(height: 8),
+//                                 Text(
+//                                   activity.details,
+//                                   style: const TextStyle(
+//                                     fontSize: 14,
+//                                     color: Colors.grey,
+//                                   ),
+//                                 ),
+//                                 const SizedBox(height: 8),
+//                                 Row(
+//                                   mainAxisAlignment:
+//                                       MainAxisAlignment.spaceBetween,
+//                                   children: [
+//                                     Text(
+//                                       DateFormat(
+//                                         'dd MMM yyyy, hh:mm a',
+//                                       ).format(activity.dateTime),
+//                                       style: const TextStyle(
+//                                         fontSize: 12,
+//                                         color: Colors.grey,
+//                                       ),
+//                                     ),
+//                                     Icon(
+//                                       activity.isCompleted
+//                                           ? Icons.check_circle
+//                                           : Icons.pending,
+//                                       color: activity.isCompleted
+//                                           ? Colors.green
+//                                           : Colors.orange,
+//                                     ),
+//                                   ],
+//                                 ),
+//                               ],
+//                             ),
+//                           ),
+//                         ),
+//                       );
+//                     },
+//                   ),
+//           ),
+//         ],
+//       ),
+//       floatingActionButton: FloatingActionButton(
+//         backgroundColor: AppColor.mainColor,
+//         onPressed: () => _showActivityBottomSheet(),
+//         child: Icon(Icons.add, color: AppColor.scaffoldBackground),
+//       ),
+//     );
+//   }
+// }
+//
+// // Activity model
+// class Activity {
+//   final String title;
+//   final String details;
+//   final DateTime dateTime;
+//   final bool isCompleted;
+//
+//   Activity({
+//     required this.title,
+//     required this.details,
+//     required this.dateTime,
+//     this.isCompleted = false,
+//   });
+// }
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:leads_management_app/theme/colors.dart';
+
+class Activity {
+  final String title;
+  final String details;
+  final DateTime dateTime;
+  final bool isCompleted;
+
+  Activity({
+    required this.title,
+    required this.details,
+    required this.dateTime,
+    this.isCompleted = false,
+  });
+}
 
 class ActivityScreen extends StatefulWidget {
-  const ActivityScreen({super.key});
-
   @override
-  State<ActivityScreen> createState() => _ActivityScreenState();
+  _ActivityScreenState createState() => _ActivityScreenState();
 }
 
 class _ActivityScreenState extends State<ActivityScreen> {
-  DateTime selectedDate = DateTime.now();
-  List<Map<String, dynamic>> allActivities = [];
-  List<Map<String, dynamic>> filteredActivities = [];
-  String selectedFilter = 'All';
+  List<Activity> activities = [
+    Activity(
+      title: 'Cold Call',
+      details:
+          'Reached out to discuss product demo. Lead showed interest in pricing.',
+      dateTime: DateTime.now().subtract(Duration(days: 3)),
+      isCompleted: true,
+    ),
+    Activity(
+      title: 'Send Proposal',
+      details:
+          'Shared pricing and contract details via email. Awaiting response.',
+      dateTime: DateTime.now(),
+      isCompleted: false,
+    ),
+    Activity(
+      title: 'Product Demo',
+      details: 'Scheduled Zoom call for a live demo on Friday at 2 PM.',
+      dateTime: DateTime.now().add(Duration(days: 1)),
+      isCompleted: false,
+    ),
+  ];
 
-  @override
-  void initState() {
-    super.initState();
-    _loadDummyData();
-    _applyFilter();
+  DateTime currentDate = DateTime.now(); // holds current month & year
+  int? selectedDay; // holds selected day (date)
+
+  List<int> getDaysInMonth(DateTime date) {
+    final firstDay = DateTime(date.year, date.month, 1);
+    final lastDay = DateTime(date.year, date.month + 1, 0);
+    return List<int>.generate(lastDay.day, (i) => i + 1);
   }
 
-  void _loadDummyData() {
-    allActivities = [
-      {
-        'time': '09:00 AM',
-        'type': 'Call',
-        'assignedUser': 'Alex John',
-        'linkedTo': 'Opportunity A',
-        'status': 'Scheduled',
-        'date': selectedDate,
-      },
-      {
-        'time': '02:55 PM',
-        'type': 'Meeting',
-        'assignedUser': 'Pin.janna',
-        'linkedTo': 'Sale Order B',
-        'status': 'Scheduled',
-        'date': selectedDate,
-      },
-      {
-        'time': '11:00 AM',
-        'type': 'Email',
-        'assignedUser': 'Sara',
-        'linkedTo': 'Opportunity B',
-        'status': 'Scheduled',
-        'date': selectedDate,
-      },
-    ];
+  List<Activity> get filteredActivities {
+    return activities.where((activity) {
+      if (selectedDay == null) return true;
+      return activity.dateTime.year == currentDate.year &&
+          activity.dateTime.month == currentDate.month &&
+          activity.dateTime.day == selectedDay;
+    }).toList();
   }
 
-  void _applyFilter() {
+  void _changeMonth(int offset) {
     setState(() {
-      filteredActivities = allActivities.where((activity) {
-        final sameDate =
-            activity['date'].day == selectedDate.day &&
-            activity['date'].month == selectedDate.month &&
-            activity['date'].year == selectedDate.year;
-
-        final matchesFilter = selectedFilter == 'All'
-            ? true
-            : activity['type'] == selectedFilter;
-
-        return sameDate && matchesFilter;
-      }).toList();
+      currentDate = DateTime(currentDate.year, currentDate.month + offset);
+      selectedDay = null; // Reset day when changing month
     });
   }
 
-  void _navigateMonth(bool forward) {
-    setState(() {
-      selectedDate = DateTime(
-        selectedDate.year,
-        selectedDate.month + (forward ? 1 : -1),
-      );
-      _applyFilter();
-    });
-  }
+  void _showActivityBottomSheet({Activity? existingActivity, int? index}) {
+    final TextEditingController nameController = TextEditingController(
+      text: existingActivity?.title ?? '',
+    );
+    final TextEditingController detailsController = TextEditingController(
+      text: existingActivity?.details ?? '',
+    );
 
-  void _onDateSelected(DateTime date) {
-    setState(() {
-      selectedDate = date;
-      _applyFilter();
-    });
-  }
+    DateTime selectedDate = existingActivity?.dateTime ?? DateTime.now();
+    TimeOfDay selectedTime = existingActivity != null
+        ? TimeOfDay.fromDateTime(existingActivity.dateTime)
+        : TimeOfDay.now();
 
-  Color _getTypeColor(String type) {
-    switch (type) {
-      case 'Call':
-        return Colors.blue;
-      case 'Meeting':
-        return Colors.orange;
-      case 'Email':
-        return Colors.green;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  void _handleAction(String action, Map<String, dynamic> activity) {
-    switch (action) {
-      case 'edit':
-        _showDialog(
-          'View/Edit',
-          'You can show editable UI here for "${activity['type']}".',
-        );
-        break;
-      case 'done':
-        _showDialog(
-          'Mark As Done',
-          'You marked "${activity['type']}" as done.',
-        );
-        break;
-      case 'cancel':
-        _showDialog('Cancel', 'You cancelled "${activity['type']}".');
-        break;
-    }
-  }
-
-  void _showDialog(String title, String message) {
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: StatefulBuilder(
+            builder: (context, setSheetState) {
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: TextField(
+                        controller: nameController,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          hintText: 'Follow-up task name',
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: TextField(
+                        controller: detailsController,
+                        maxLines: 4,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          hintText: 'Details',
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'When to remind?',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () async {
+                              final DateTime? picked = await showDatePicker(
+                                context: context,
+                                initialDate: selectedDate,
+                                firstDate: DateTime(2000),
+                                lastDate: DateTime(2101),
+                              );
+                              if (picked != null) {
+                                setSheetState(() => selectedDate = picked);
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 14,
+                                horizontal: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[200],
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.date_range,
+                                    color: Colors.blue,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    DateFormat(
+                                      'dd MMM, yyyy',
+                                    ).format(selectedDate),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 15),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () async {
+                              final TimeOfDay? picked = await showTimePicker(
+                                context: context,
+                                initialTime: selectedTime,
+                              );
+                              if (picked != null) {
+                                setSheetState(() => selectedTime = picked);
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 14,
+                                horizontal: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[200],
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.access_time,
+                                    color: Colors.blue,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Text(selectedTime.format(context)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        if (existingActivity != null)
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  activities.removeAt(index!);
+                                });
+                                Navigator.pop(context);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: const Text('DELETE'),
+                            ),
+                          ),
+                        if (existingActivity != null) const SizedBox(width: 15),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              final newDateTime = DateTime(
+                                selectedDate.year,
+                                selectedDate.month,
+                                selectedDate.day,
+                                selectedTime.hour,
+                                selectedTime.minute,
+                              );
+                              final newActivity = Activity(
+                                title: nameController.text.trim(),
+                                details: detailsController.text.trim(),
+                                dateTime: newDateTime,
+                              );
+                              setState(() {
+                                if (existingActivity != null) {
+                                  activities[index!] = newActivity;
+                                } else {
+                                  activities.add(newActivity);
+                                }
+                              });
+                              Navigator.pop(context);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text('SAVE'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentMonthDays = List.generate(
-      DateUtils.getDaysInMonth(selectedDate.year, selectedDate.month),
-      (i) => DateTime(selectedDate.year, selectedDate.month, i + 1),
-    );
+    final daysInMonth = getDaysInMonth(currentDate);
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Padding(
-        padding: const EdgeInsets.only(top: 0, left: 16, right: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      backgroundColor: AppColor.scaffoldBackground,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Month Selector UI
+          Container(
+            color: AppColor.secondaryColor,
+            child: Column(
               children: [
-                Text(
-                  DateFormat('MMM yyyy').format(selectedDate),
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 5,
                   ),
-                ),
-                Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.chevron_left),
-                      onPressed: () => _navigateMonth(false),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.chevron_right),
-                      onPressed: () => _navigateMonth(true),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-
-            // Scrollable Dates
-            SizedBox(
-              height: 60,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: currentMonthDays.length,
-                itemBuilder: (context, index) {
-                  final date = currentMonthDays[index];
-                  final isSelected =
-                      date.day == selectedDate.day &&
-                      date.month == selectedDate.month &&
-                      date.year == selectedDate.year;
-                  return GestureDetector(
-                    onTap: () => _onDateSelected(date),
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 6),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 6,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        DateFormat('MMMM yyyy').format(currentDate),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                      decoration: BoxDecoration(
-                        color: isSelected ? Colors.blue : Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      Row(
                         children: [
-                          Text(
-                            DateFormat('E').format(date),
-                            style: TextStyle(
-                              color: isSelected ? Colors.white : Colors.black,
-                              fontSize: 12,
+                          IconButton(
+                            icon: const Icon(
+                              Icons.arrow_back_ios_new,
+                              color: Colors.white,
                             ),
+                            onPressed: () => _changeMonth(-1),
                           ),
-                          Text(
-                            date.day.toString(),
-                            style: TextStyle(
-                              color: isSelected ? Colors.white : Colors.black,
-                              fontWeight: FontWeight.bold,
+                          IconButton(
+                            icon: const Icon(
+                              Icons.arrow_forward_ios_outlined,
+                              color: Colors.white,
                             ),
+                            onPressed: () => _changeMonth(1),
                           ),
                         ],
                       ),
+                    ],
+                  ),
+                ),
+
+                // Days Strip UI
+                SizedBox(
+                  height: 80,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
                     ),
-                  );
-                },
-              ),
-            ),
+                    itemCount: daysInMonth.length,
+                    itemBuilder: (context, index) {
+                      final day = daysInMonth[index];
+                      final date = DateTime(
+                        currentDate.year,
+                        currentDate.month,
+                        day,
+                      );
+                      final isSelected = selectedDay == day;
 
-            const SizedBox(height: 12),
-
-            // Filter Dropdown
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                DropdownButton<String>(
-                  value: selectedFilter,
-                  items: ['All', 'Call', 'Meeting', 'Email']
-                      .map(
-                        (type) =>
-                            DropdownMenuItem(value: type, child: Text(type)),
-                      )
-                      .toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() {
-                        selectedFilter = value;
-                        _applyFilter();
-                      });
-                    }
-                  },
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            selectedDay = day;
+                          });
+                        },
+                        child: Container(
+                          width: 60,
+                          margin: const EdgeInsets.only(right: 10),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? Colors.blue.shade700
+                                : Colors.grey[200],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                DateFormat('E').format(date),
+                                style: TextStyle(
+                                  color: isSelected
+                                      ? Colors.white
+                                      : Colors.black,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 5),
+                              Text(
+                                '$day',
+                                style: TextStyle(
+                                  color: isSelected
+                                      ? Colors.white
+                                      : Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ],
             ),
+          ),
 
-            const SizedBox(height: 10),
-
-            // Activity List
-            Expanded(
-              child: filteredActivities.isEmpty
-                  ? const Center(child: Text("No activities found"))
-                  : ListView.builder(
-                      itemCount: filteredActivities.length,
-                      itemBuilder: (context, index) {
-                        final activity = filteredActivities[index];
-                        return Card(
-                          color: _getTypeColor(
-                            activity['type'],
-                          ).withOpacity(0.1),
-                          margin: const EdgeInsets.symmetric(vertical: 6),
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: _getTypeColor(activity['type']),
-                              child: Text(
-                                activity['time'].split(' ')[0],
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                ),
-                              ),
-                            ),
-                            title: Text(
-                              activity['type'],
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            subtitle: Column(
+          // Activities List
+          Expanded(
+            child: filteredActivities.isEmpty
+                ? const Center(
+                    child: Text(
+                      'No activities available',
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.only(top: 10),
+                    itemCount: filteredActivities.length,
+                    itemBuilder: (context, index) {
+                      final activity = filteredActivities[index];
+                      final originalIndex = activities.indexOf(activity);
+                      return GestureDetector(
+                        onTap: () {
+                          _showActivityBottomSheet(
+                            existingActivity: activity,
+                            index: originalIndex,
+                          );
+                        },
+                        child: Card(
+                          color: activity.isCompleted
+                              ? Colors.grey.shade300
+                              : Colors.white,
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "Assigned to: ${activity['assignedUser']}",
+                                  activity.title,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                                Text("Linked to: ${activity['linkedTo']}"),
-                              ],
-                            ),
-                            trailing: PopupMenuButton<String>(
-                              onSelected: (value) =>
-                                  _handleAction(value, activity),
-                              itemBuilder: (context) => [
-                                const PopupMenuItem(
-                                  value: 'edit',
-                                  child: Text('View / Edit'),
+                                const SizedBox(height: 8),
+                                Text(
+                                  activity.details,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey,
+                                  ),
                                 ),
-                                const PopupMenuItem(
-                                  value: 'done',
-                                  child: Text('Mark As Done'),
-                                ),
-                                const PopupMenuItem(
-                                  value: 'cancel',
-                                  child: Text('Cancel'),
+                                const SizedBox(height: 8),
+                                Text(
+                                  DateFormat(
+                                    'dd MMM, yyyy hh:mm a',
+                                  ).format(activity.dateTime),
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.black54,
+                                  ),
                                 ),
                               ],
                             ),
                           ),
-                        );
-                      },
-                    ),
-            ),
-          ],
-        ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColor.mainColor,
+        onPressed: () => _showActivityBottomSheet(),
+        child: Icon(Icons.add, color: AppColor.scaffoldBackground),
       ),
     );
   }

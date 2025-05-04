@@ -49,7 +49,6 @@ class _ActivityScreenState extends State<ActivityScreen> {
   int? selectedDay; // holds selected day (date)
 
   List<int> getDaysInMonth(DateTime date) {
-    final firstDay = DateTime(date.year, date.month, 1);
     final lastDay = DateTime(date.year, date.month + 1, 0);
     return List<int>.generate(lastDay.day, (i) => i + 1);
   }

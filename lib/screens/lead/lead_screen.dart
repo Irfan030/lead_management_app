@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:leads_management_app/models/lead_model.dart';
 import 'package:leads_management_app/theme/colors.dart';
+import 'package:leads_management_app/utils/color_utils.dart';
 
 import 'create_lead_screen.dart';
 import 'lead_detail.dart';
@@ -35,15 +36,37 @@ class _LeadListScreenState extends State<LeadListScreen> {
         stage: 'New',
         date: DateTime(2025, 2, 27),
         activities: [
-          Activity(type: 'Call', desc: 'call meeting', date: '21-02-2025', icon: Icons.phone, color: Colors.red),
-          Activity(type: 'Meeting', desc: 'Meeting with HR', date: '24-02-2025', icon: Icons.groups, color: Colors.blue),
+          Activity(
+            type: 'Call',
+            desc: 'call meeting',
+            date: '21-02-2025',
+            icon: Icons.phone,
+            color: Colors.red,
+          ),
+          Activity(
+            type: 'Meeting',
+            desc: 'Meeting with HR',
+            date: '24-02-2025',
+            icon: Icons.groups,
+            color: Colors.blue,
+          ),
         ],
         notesList: [
           Note(date: '24-02-2025', desc: 'Lead/Opportunity created'),
-          Note(date: '21-02-2025', desc: 'Lead Enrichment (based on email address)\nNo company data found based on the email address or email address is one of an email provider. No credit was consumed.'),
+          Note(
+            date: '21-02-2025',
+            desc:
+                'Lead Enrichment (based on email address)\nNo company data found based on the email address or email address is one of an email provider. No credit was consumed.',
+          ),
         ],
         callLogs: [
-          CallLog(type: 'Outgoing', name: 'Jons Miley', datetime: '27-02-2025 17:21:25', duration: '0m 5s', recording: true),
+          CallLog(
+            type: 'Outgoing',
+            name: 'Jons Miley',
+            datetime: '27-02-2025 17:21:25',
+            duration: '0m 5s',
+            recording: true,
+          ),
         ],
       ),
       Lead(
@@ -52,14 +75,30 @@ class _LeadListScreenState extends State<LeadListScreen> {
         stage: 'Qualified',
         date: DateTime(2025, 2, 27),
         activities: [
-          Activity(type: 'Call', desc: 'Arrange Call For Meeting', date: '24-02-2025', icon: Icons.phone, color: Colors.red),
-          Activity(type: 'Email', desc: 'Send Email to HR', date: '25-02-2025', icon: Icons.email, color: Colors.green),
+          Activity(
+            type: 'Call',
+            desc: 'Arrange Call For Meeting',
+            date: '24-02-2025',
+            icon: Icons.phone,
+            color: Colors.red,
+          ),
+          Activity(
+            type: 'Email',
+            desc: 'Send Email to HR',
+            date: '25-02-2025',
+            icon: Icons.email,
+            color: Colors.green,
+          ),
         ],
-        notesList: [
-          Note(date: '24-02-2025', desc: 'Lead/Opportunity created'),
-        ],
+        notesList: [Note(date: '24-02-2025', desc: 'Lead/Opportunity created')],
         callLogs: [
-          CallLog(type: 'Outgoing', name: "Dixit's Opportunity", datetime: '27-02-2025 11:26:48', duration: '1', recording: false),
+          CallLog(
+            type: 'Outgoing',
+            name: "Dixit's Opportunity",
+            datetime: '27-02-2025 11:26:48',
+            duration: '1',
+            recording: false,
+          ),
         ],
       ),
       Lead(
@@ -427,7 +466,9 @@ class _LeadListScreenState extends State<LeadListScreen> {
                                               vertical: 4,
                                             ),
                                             decoration: BoxDecoration(
-                                              color: _getStageColor(lead.stage),
+                                              color: ColorUtils.getStageColor(
+                                                lead.stage,
+                                              ),
                                               borderRadius:
                                                   BorderRadius.circular(8),
                                             ),
@@ -499,23 +540,6 @@ class _LeadListScreenState extends State<LeadListScreen> {
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
-  }
-
-  Color _getStageColor(String stage) {
-    switch (stage) {
-      case 'New':
-        return Colors.blue;
-      case 'Qualified':
-        return Colors.orange;
-      case 'Proposition':
-        return Colors.teal;
-      case 'Won':
-        return Colors.green;
-      case 'Lost':
-        return Colors.red;
-      default:
-        return Colors.grey;
-    }
   }
 }
 

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:leads_management_app/models/dummy_leads.dart';
+import 'package:leads_management_app/models/lead_model.dart';
+import 'package:leads_management_app/models/opportunity.dart';
 import 'package:leads_management_app/theme/colors.dart';
 
 import 'create_opportunity.dart';
@@ -13,50 +15,48 @@ class OpportunityListScreen extends StatefulWidget {
 }
 
 class _OpportunityListScreenState extends State<OpportunityListScreen> {
-  List<Map<String, dynamic>> opportunities = [
-    {
-      'name': 'Interest in your products',
-      'date': '2021-12-30',
-      'revenue': 2000.00,
-      'probability': '100.0%',
-      'customer': 'Deco Addict',
-      'stage': 'Won',
-    },
-    {
-      'name': 'Modern Open Space',
-      'date': '2021-12-29',
-      'revenue': 4500.00,
-      'probability': '60.0%',
-      'customer': 'Unknown',
-      'stage': 'Proposition',
-    },
-    {
-      'name': 'Office Design and Architecture',
-      'date': '2021-12-28',
-      'revenue': 9000.00,
-      'probability': '3.45%',
-      'customer': 'Ready Mat',
-      'stage': 'Proposition',
-    },
-    {
-      'name': 'Info about services',
-      'date': '2021-12-31',
-      'revenue': 25000.00,
-      'probability': '30.0%',
-      'customer': 'Deco Addict',
-      'stage': 'Qualified',
-    },
-  ];
-
-  List<Map<String, dynamic>> filteredOpportunities = [];
+  List<Lead> leads = [];
+  List<Opportunity> opportunities = [];
+  List<Opportunity> filteredOpportunities = [];
   String searchQuery = '';
   String selectedStageFilter = 'All';
   bool sortAscending = true;
-  String sortBy = 'Name'; // new: sort by Name, Revenue, or Date
+  String sortBy = 'Name';
 
   @override
   void initState() {
     super.initState();
+    leads = getDummyLeads();
+    opportunities = [
+      Opportunity(
+        name: 'Interest in your products',
+        lead: leads.isNotEmpty ? leads[0] : null,
+        date: '2021-12-30',
+        stage: 'Won',
+        expectedRevenue: 2000.00,
+      ),
+      Opportunity(
+        name: 'Modern Open Space',
+        lead: leads.length > 1 ? leads[1] : null,
+        date: '2021-12-29',
+        stage: 'Proposition',
+        expectedRevenue: 4500.00,
+      ),
+      Opportunity(
+        name: 'Office Design and Architecture',
+        lead: leads.length > 2 ? leads[2] : null,
+        date: '2021-12-28',
+        stage: 'Proposition',
+        expectedRevenue: 9000.00,
+      ),
+      Opportunity(
+        name: 'Info about services',
+        lead: leads.length > 3 ? leads[3] : null,
+        date: '2021-12-31',
+        stage: 'Qualified',
+        expectedRevenue: 25000.00,
+      ),
+    ];
     filteredOpportunities = List.from(opportunities);
   }
 
@@ -68,33 +68,28 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
   }
 
   void applyFilters() {
-    List<Map<String, dynamic>> result = opportunities
+    List<Opportunity> result = opportunities
         .where(
-          (opp) =>
-              opp['name'].toLowerCase().contains(searchQuery.toLowerCase()),
+          (opp) => opp.name.toLowerCase().contains(searchQuery.toLowerCase()),
         )
         .toList();
 
     if (selectedStageFilter != 'All') {
-      result = result
-          .where((opp) => opp['stage'] == selectedStageFilter)
-          .toList();
+      result = result.where((opp) => opp.stage == selectedStageFilter).toList();
     }
 
     result.sort((a, b) {
       int comparison;
       switch (sortBy) {
         case 'Revenue':
-          comparison = (a['revenue'] as double).compareTo(b['revenue']);
+          comparison = a.expectedRevenue.compareTo(b.expectedRevenue);
           break;
         case 'Date':
-          comparison = DateTime.parse(
-            a['date'],
-          ).compareTo(DateTime.parse(b['date']));
+          comparison = DateTime.parse(a.date).compareTo(DateTime.parse(b.date));
           break;
         case 'Name':
         default:
-          comparison = a['name'].compareTo(b['name']);
+          comparison = a.name.compareTo(b.name);
       }
       return sortAscending ? comparison : -comparison;
     });
@@ -170,10 +165,7 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
     });
   }
 
-  void showOpportunityMenu(
-    BuildContext context,
-    Map<String, dynamic> opportunity,
-  ) {
+  void showOpportunityMenu(BuildContext context, Opportunity opportunity) {
     showModalBottomSheet(
       context: context,
       builder: (context) => Padding(
@@ -185,11 +177,13 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
               leading: const Icon(Icons.visibility),
               title: const Text('View/Update'),
               onTap: () async {
-                final updatedOpp = await Navigator.push(
+                final updatedOpp = await Navigator.push<Opportunity>(
                   context,
                   MaterialPageRoute(
-                    builder: (_) =>
-                        OpportunityViewUpdateScreen(opportunity: opportunity),
+                    builder: (_) => OpportunityViewUpdateScreen(
+                      opportunity: opportunity,
+                      leads: leads,
+                    ),
                   ),
                 );
                 if (updatedOpp != null) {
@@ -204,15 +198,23 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
                 }
               },
             ),
-
             ListTile(
               leading: const Icon(Icons.check_circle_outline),
               title: const Text('Mark as Won'),
               onTap: () {
                 Navigator.pop(context);
                 setState(() {
-                  opportunity['stage'] = 'Won';
-                  applyFilters();
+                  final index = opportunities.indexOf(opportunity);
+                  if (index != -1) {
+                    opportunities[index] = Opportunity(
+                      name: opportunity.name,
+                      lead: opportunity.lead,
+                      date: opportunity.date,
+                      stage: 'Won',
+                      expectedRevenue: opportunity.expectedRevenue,
+                    );
+                    applyFilters();
+                  }
                 });
               },
             ),
@@ -222,7 +224,27 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
               onTap: () {
                 Navigator.pop(context);
                 setState(() {
-                  opportunity['stage'] = 'Lost';
+                  final index = opportunities.indexOf(opportunity);
+                  if (index != -1) {
+                    opportunities[index] = Opportunity(
+                      name: opportunity.name,
+                      lead: opportunity.lead,
+                      date: opportunity.date,
+                      stage: 'Lost',
+                      expectedRevenue: opportunity.expectedRevenue,
+                    );
+                    applyFilters();
+                  }
+                });
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete, color: Colors.red),
+              title: const Text('Delete', style: TextStyle(color: Colors.red)),
+              onTap: () {
+                Navigator.pop(context);
+                setState(() {
+                  opportunities.remove(opportunity);
                   applyFilters();
                 });
               },
@@ -243,8 +265,23 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
         return Colors.orange;
       case 'Qualified':
         return Colors.blue;
+      case 'New':
+        return Colors.grey;
       default:
         return Colors.grey;
+    }
+  }
+
+  void _addOpportunity() async {
+    final newOpp = await Navigator.push<Opportunity>(
+      context,
+      MaterialPageRoute(builder: (_) => CreateOpportunityScreen(leads: leads)),
+    );
+    if (newOpp != null) {
+      setState(() {
+        opportunities.add(newOpp);
+        applyFilters();
+      });
     }
   }
 
@@ -308,39 +345,60 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
                     itemBuilder: (context, index) {
                       final opp = filteredOpportunities[index];
                       return Card(
-                        margin: const EdgeInsets.all(10),
-                        child: ListTile(
-                          onTap: () => showOpportunityMenu(context, opp),
-                          title: Text(
-                            opp['name'],
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(opp['customer']),
-                              Text(opp['date']),
-                              Text(
-                                '${NumberFormat.currency(symbol: '\$', decimalDigits: 2).format(opp['revenue'])} (${opp['probability']})',
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        elevation: 3,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border(
+                              left: BorderSide(
+                                color: getStageColor(opp.stage),
+                                width: 6,
                               ),
-                            ],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                          trailing: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
                             ),
-                            decoration: BoxDecoration(
-                              color: getStageColor(opp['stage']),
-                              borderRadius: BorderRadius.circular(12),
+                            leading: CircleAvatar(
+                              backgroundColor: getStageColor(opp.stage),
+                              child: Icon(Icons.work, color: Colors.white),
                             ),
-                            child: Text(
-                              opp['stage'],
+                            title: Text(
+                              opp.name,
                               style: const TextStyle(
-                                color: Colors.white,
                                 fontWeight: FontWeight.bold,
+                                fontSize: 16,
                               ),
                             ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Lead: ${opp.lead?.name ?? '-'}'),
+                                Text(
+                                  'Revenue: \$${opp.expectedRevenue.toStringAsFixed(2)}',
+                                ),
+                                Text('Date: ${opp.date}'),
+                              ],
+                            ),
+                            trailing: Chip(
+                              label: Text(opp.stage),
+                              backgroundColor: getStageColor(
+                                opp.stage,
+                              ).withOpacity(0.15),
+                              labelStyle: TextStyle(
+                                color: getStageColor(opp.stage),
+                              ),
+                            ),
+                            onTap: () => showOpportunityMenu(context, opp),
                           ),
                         ),
                       );
@@ -350,21 +408,7 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => CreateOpportunityScreen(
-                onOpportunityCreated: (newOpp) {
-                  setState(() {
-                    opportunities.add(newOpp);
-                    applyFilters();
-                  });
-                },
-              ),
-            ),
-          );
-        },
+        onPressed: _addOpportunity,
         backgroundColor: AppColor.mainColor,
         foregroundColor: AppColor.borderColor,
         child: const Icon(Icons.add),

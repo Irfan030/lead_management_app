@@ -1,0 +1,150 @@
+import 'package:flutter/material.dart';
+import 'package:leads_management_app/models/lead_model.dart';
+
+List<Lead> getDummyLeads() {
+  return [
+    Lead(
+      name: 'Jons Miley',
+      phone: '8563412547',
+      stage: 'New',
+      date: DateTime(2025, 2, 27),
+      activities: [
+        Activity(
+          type: 'Call',
+          desc: 'call meeting',
+          date: '21-02-2025',
+          icon: Icons.phone,
+          color: Colors.red,
+        ),
+        Activity(
+          type: 'Meeting',
+          desc: 'Meeting with HR',
+          date: '24-02-2025',
+          icon: Icons.groups,
+          color: Colors.blue,
+        ),
+      ],
+      notesList: [
+        Note(date: '24-02-2025', desc: 'Lead/Opportunity created'),
+        Note(
+          date: '21-02-2025',
+          desc:
+              'Lead Enrichment (based on email address)\nNo company data found based on the email address or email address is one of an email provider. No credit was consumed.',
+        ),
+      ],
+      callLogs: [
+        CallLog(
+          type: 'Outgoing',
+          name: 'Jons Miley',
+          datetime: '27-02-2025 17:21:25',
+          duration: '0m 5s',
+          recording: true,
+        ),
+      ],
+    ),
+    Lead(
+      name: "Dixit's Opportunity",
+      phone: '9845632175',
+      stage: 'Qualified',
+      date: DateTime(2025, 2, 27),
+      activities: [
+        Activity(
+          type: 'Call',
+          desc: 'Arrange Call For Meeting',
+          date: '24-02-2025',
+          icon: Icons.phone,
+          color: Colors.red,
+        ),
+        Activity(
+          type: 'Email',
+          desc: 'Send Email to HR',
+          date: '25-02-2025',
+          icon: Icons.email,
+          color: Colors.green,
+        ),
+      ],
+      notesList: [Note(date: '24-02-2025', desc: 'Lead/Opportunity created')],
+      callLogs: [
+        CallLog(
+          type: 'Outgoing',
+          name: "Dixit's Opportunity",
+          datetime: '27-02-2025 11:26:48',
+          duration: '1',
+          recording: false,
+        ),
+      ],
+    ),
+    Lead(
+      name: 'Rahul',
+      phone: '9915364789',
+      stage: 'Proposition',
+      date: DateTime(2025, 2, 27),
+      activities: [],
+      notesList: [],
+      callLogs: [],
+    ),
+    Lead(
+      name: 'Manish Roy',
+      phone: '8634597216',
+      stage: 'Won',
+      date: DateTime(2025, 2, 27),
+      activities: [],
+      notesList: [],
+      callLogs: [],
+    ),
+    Lead(
+      name: 'Anjali Sharma',
+      phone: '7854129630',
+      stage: 'New',
+      date: DateTime(2025, 2, 28),
+      activities: [],
+      notesList: [],
+      callLogs: [],
+    ),
+    Lead(
+      name: 'Vikas Patel',
+      phone: '9021547836',
+      stage: 'Qualified',
+      date: DateTime(2025, 2, 28),
+      activities: [],
+      notesList: [],
+      callLogs: [],
+    ),
+    Lead(
+      name: 'Neha Gupta',
+      phone: '9765432180',
+      stage: 'Proposition',
+      date: DateTime(2025, 3, 1),
+      activities: [],
+      notesList: [],
+      callLogs: [],
+    ),
+    Lead(
+      name: 'Ramesh Kumar',
+      phone: '8897456123',
+      stage: 'Negotiation',
+      date: DateTime(2025, 3, 1),
+      activities: [],
+      notesList: [],
+      callLogs: [],
+    ),
+    Lead(
+      name: 'Sonal Singh',
+      phone: '9812345678',
+      stage: 'Won',
+      date: DateTime(2025, 3, 2),
+      activities: [],
+      notesList: [],
+      callLogs: [],
+    ),
+    Lead(
+      name: 'Amit Joshi',
+      phone: '9123456789',
+      stage: 'Lost',
+      date: DateTime(2025, 3, 2),
+      activities: [],
+      notesList: [],
+      callLogs: [],
+    ),
+  ];
+}

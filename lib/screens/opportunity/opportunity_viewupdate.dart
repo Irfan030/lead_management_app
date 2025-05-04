@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:leads_management_app/theme/colors.dart';
 import 'package:leads_management_app/widgets/appbar.dart';
+import 'package:leads_management_app/models/opportunity.dart';
+import 'package:leads_management_app/models/lead_model.dart';
+import 'package:leads_management_app/utils/color_utils.dart';
 
 class OpportunityViewUpdateScreen extends StatefulWidget {
-  final Map<String, dynamic> opportunity;
+  final Opportunity opportunity;
+  final List<Lead> leads;
 
-  const OpportunityViewUpdateScreen({super.key, required this.opportunity});
+  const OpportunityViewUpdateScreen({super.key, required this.opportunity, required this.leads});
 
   @override
-  State<OpportunityViewUpdateScreen> createState() =>
-      _OpportunityViewUpdateScreenState();
+  State<OpportunityViewUpdateScreen> createState() => _OpportunityViewUpdateScreenState();
 }
 
-class _OpportunityViewUpdateScreenState
-    extends State<OpportunityViewUpdateScreen> {
+class _OpportunityViewUpdateScreenState extends State<OpportunityViewUpdateScreen> {
   late TextEditingController nameController;
   late TextEditingController revenueController;
-  late TextEditingController probabilityController;
-  late TextEditingController customerController;
+  late Lead? selectedLead;
   late String selectedStage;
+  late String date;
 
   final List<String> stages = [
     'New',
@@ -31,41 +33,28 @@ class _OpportunityViewUpdateScreenState
   @override
   void initState() {
     super.initState();
-    nameController = TextEditingController(text: widget.opportunity['name']);
-    revenueController = TextEditingController(
-      text: widget.opportunity['revenue'].toString(),
-    );
-    probabilityController = TextEditingController(
-      text: widget.opportunity['probability'] ?? '',
-    );
-    customerController = TextEditingController(
-      text: widget.opportunity['customer'] ?? '',
-    );
-    selectedStage = widget.opportunity['stage'];
+    nameController = TextEditingController(text: widget.opportunity.name);
+    revenueController = TextEditingController(text: widget.opportunity.expectedRevenue.toString());
+    selectedLead = widget.opportunity.lead;
+    selectedStage = widget.opportunity.stage;
+    date = widget.opportunity.date;
   }
 
   @override
   void dispose() {
     nameController.dispose();
     revenueController.dispose();
-    probabilityController.dispose();
-    customerController.dispose();
     super.dispose();
   }
 
   void updateOpportunity() {
     String name = nameController.text.trim();
     String revenueText = revenueController.text.trim();
-    String probability = probabilityController.text.trim();
-    String customer = customerController.text.trim();
 
-    if (name.isEmpty ||
-        revenueText.isEmpty ||
-        probability.isEmpty ||
-        customer.isEmpty) {
+    if (name.isEmpty || revenueText.isEmpty || selectedLead == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please fill all fields.'),
+          content: Text('Please fill all fields and select a lead.'),
           backgroundColor: AppColor.secondaryColor,
         ),
       );
@@ -83,14 +72,13 @@ class _OpportunityViewUpdateScreenState
       return;
     }
 
-    final updatedOpportunity = {
-      ...widget.opportunity,
-      'name': name,
-      'revenue': revenue,
-      'probability': probability,
-      'customer': customer,
-      'stage': selectedStage,
-    };
+    final updatedOpportunity = Opportunity(
+      name: name,
+      lead: selectedLead,
+      date: date,
+      stage: selectedStage,
+      expectedRevenue: revenue,
+    );
 
     Navigator.pop(context, updatedOpportunity);
   }
@@ -99,71 +87,108 @@ class _OpportunityViewUpdateScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(title: 'Opportunity'),
-
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(
-                labelText: 'Opportunity Name',
-                border: OutlineInputBorder(),
+            // Summary Card
+            Card(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              color: ColorUtils.getStageColor(selectedStage).withOpacity(0.08),
+              elevation: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            nameController.text.isNotEmpty ? nameController.text : 'Opportunity',
+                            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        Chip(
+                          label: Text(selectedStage),
+                          backgroundColor: ColorUtils.getStageColor(selectedStage),
+                          labelStyle: const TextStyle(color: Colors.white),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text('Revenue: \$${revenueController.text.isNotEmpty ? revenueController.text : '0.00'}', style: const TextStyle(fontSize: 16)),
+                    Text('Lead: ${selectedLead?.name ?? '-'}', style: const TextStyle(fontSize: 16)),
+                    Text('Date: $date', style: const TextStyle(fontSize: 16)),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 20),
-            Text(
-              'Creation Date: ${widget.opportunity['date']}',
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: customerController,
-              decoration: const InputDecoration(
-                labelText: 'Customer Name',
-                border: OutlineInputBorder(),
+            const SizedBox(height: 24),
+            // Editable Fields
+            ListTile(
+              leading: const Icon(Icons.title, color: Colors.blue),
+              title: TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Opportunity Name',
+                  border: OutlineInputBorder(),
+                ),
               ),
             ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: revenueController,
-              keyboardType: TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
-                labelText: 'Revenue',
-                border: OutlineInputBorder(),
-                prefixText: '\$ ',
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.person, color: Colors.teal),
+              title: DropdownButtonFormField<Lead>(
+                value: selectedLead,
+                items: widget.leads.map((lead) {
+                  return DropdownMenuItem(
+                    value: lead,
+                    child: Text(lead.name),
+                  );
+                }).toList(),
+                onChanged: (lead) {
+                  setState(() => selectedLead = lead);
+                },
+                decoration: const InputDecoration(labelText: 'Linked Lead', border: OutlineInputBorder()),
               ),
             ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: probabilityController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Probability (%)',
-                border: OutlineInputBorder(),
-                suffixText: '%',
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.attach_money, color: Colors.orange),
+              title: TextField(
+                controller: revenueController,
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(
+                  labelText: 'Revenue',
+                  border: OutlineInputBorder(),
+                  prefixText: '\$ ',
+                ),
               ),
             ),
-            const SizedBox(height: 20),
-            DropdownButtonFormField<String>(
-              value: selectedStage,
-              items: stages.map((stage) {
-                return DropdownMenuItem<String>(
-                  value: stage,
-                  child: Text(stage),
-                );
-              }).toList(),
-              decoration: const InputDecoration(
-                labelText: 'Stage',
-                border: OutlineInputBorder(),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.flag, color: Colors.purple),
+              title: DropdownButtonFormField<String>(
+                value: selectedStage,
+                items: stages.map((stage) {
+                  return DropdownMenuItem<String>(
+                    value: stage,
+                    child: Text(stage),
+                  );
+                }).toList(),
+                decoration: const InputDecoration(
+                  labelText: 'Stage',
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() {
+                      selectedStage = value;
+                    });
+                  }
+                },
               ),
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    selectedStage = value;
-                  });
-                }
-              },
             ),
             const SizedBox(height: 30),
             ElevatedButton(

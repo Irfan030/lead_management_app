@@ -11,7 +11,7 @@ class MenuWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final List<_DrawerItem> drawerItems = [
       _DrawerItem('Dashboard', Icons.dashboard),
-      _DrawerItem('Customer', Icons.people_alt_outlined),
+      _DrawerItem('Leads', Icons.people_alt_outlined),
       _DrawerItem('Opportunity', Icons.business_center_outlined),
       _DrawerItem('Quotation/Order', Icons.receipt_long_outlined),
       _DrawerItem('Invoices', Icons.request_quote_outlined),
@@ -40,7 +40,7 @@ class MenuWidget extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   const Text(
-                    'Nikhil',
+                    'Mitchell Admin',
                     style: TextStyle(
                       fontSize: 20,
                       color: AppColor.cardBackground,

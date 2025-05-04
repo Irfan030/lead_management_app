@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:leads_management_app/screens/opportunity/log_internal_notes.dart';
 import 'package:leads_management_app/theme/colors.dart';
 
 import 'create_opportunity.dart';
@@ -206,17 +205,6 @@ class _OpportunityListScreenState extends State<OpportunityListScreen> {
               },
             ),
 
-            ListTile(
-              leading: const Icon(Icons.note_add),
-              title: const Text('Log an Internal Note'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => LogInternalNoteScreen()),
-                );
-              },
-            ),
             ListTile(
               leading: const Icon(Icons.check_circle_outline),
               title: const Text('Mark as Won'),

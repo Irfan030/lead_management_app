@@ -71,10 +71,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   Widget _buildTopOpportunityCard(Map<String, dynamic> opportunity) {
     return Card(
+      color: AppColor.cardBackground,
       child: ListTile(
         title: Text(opportunity['name']),
         subtitle: Text(opportunity['customer']),
-        trailing: Text('₹ ${opportunity['amount']}'),
+        trailing: Text('R ${opportunity['amount']}'),
       ),
     );
   }
@@ -111,7 +112,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 ),
               ),
               const SizedBox(width: 10),
-              Text(isRevenue ? '₹ ${entry.value}' : '${entry.value}'),
+              Text(isRevenue ? 'R ${entry.value}' : '${entry.value}'),
             ],
           ),
         );

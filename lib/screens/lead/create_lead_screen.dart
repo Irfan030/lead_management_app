@@ -20,12 +20,12 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
 
-  String _stage = 'New';
-  DateTime _date = DateTime.now();
+  String? _stage;
+  DateTime? _date;
   DateTime? _followUpDate;
-  LeadStatus _status = LeadStatus.newLead;
-  LeadTag _tag = LeadTag.cold;
-  LeadSource _source = LeadSource.other;
+  LeadStatus? _status;
+  LeadTag? _tag;
+  LeadSource? _source;
   int _leadScore = 0;
   List<Activity> _activities = [];
   List<Note> _notesList = [];
@@ -102,16 +102,16 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
               _buildSectionTitle('Lead Details'),
               _buildDropdown(
                 label: 'Stage',
-                items: ['New', 'Qualified', 'Proposition', 'Negotiation', 'Won', 'Lost'],
+                items: const ['New', 'Contacted', 'Qualified', 'Proposal', 'Negotiation', 'Closed Won', 'Closed Lost'],
                 value: _stage,
-                onChanged: (value) => setState(() => _stage = value ?? 'New'),
+                onChanged: (value) => setState(() => _stage = value),
               ),
               _buildDropdown(
                 label: 'Status',
                 items: LeadStatus.values
                     .map((e) => e.toString().split('.').last)
                     .toList(),
-                value: _status.toString().split('.').last,
+                value: _status?.toString().split('.').last,
                 onChanged: (value) => setState(() {
                   _status = LeadStatus.values.firstWhere(
                     (e) => e.toString().split('.').last == value,
@@ -123,7 +123,7 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
                 items: LeadTag.values
                     .map((e) => e.toString().split('.').last)
                     .toList(),
-                value: _tag.toString().split('.').last,
+                value: _tag?.toString().split('.').last,
                 onChanged: (value) => setState(() {
                   _tag = LeadTag.values.firstWhere(
                     (e) => e.toString().split('.').last == value,
@@ -135,7 +135,7 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
                 items: LeadSource.values
                     .map((e) => e.toString().split('.').last)
                     .toList(),
-                value: _source.toString().split('.').last,
+                value: _source?.toString().split('.').last,
                 onChanged: (value) => setState(() {
                   _source = LeadSource.values.firstWhere(
                     (e) => e.toString().split('.').last == value,
@@ -259,7 +259,7 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
   Widget _buildDropdown({
     required String label,
     required List<String> items,
-    required String value,
+    required String? value,
     required Function(String?) onChanged,
   }) {
     return Padding(
@@ -355,6 +355,7 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
   void _createLead() {
     if (_formKey.currentState!.validate()) {
       final newLead = Lead(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
         name: _nameController.text.trim(),
         phone: _phoneController.text.trim(),
         email: _emailController.text.trim(),

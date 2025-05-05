@@ -31,6 +31,7 @@ class _LeadListScreenState extends State<LeadListScreen> {
   List<Lead> getDummyLeads() {
     return [
       Lead(
+        id: '1',
         name: 'Jons Miley',
         phone: '8563412547',
         stage: 'New',
@@ -70,6 +71,7 @@ class _LeadListScreenState extends State<LeadListScreen> {
         ],
       ),
       Lead(
+        id: '2',
         name: "Dixit's Opportunity",
         phone: '9845632175',
         stage: 'Qualified',
@@ -102,6 +104,7 @@ class _LeadListScreenState extends State<LeadListScreen> {
         ],
       ),
       Lead(
+        id: '3',
         name: 'Rahul',
         phone: '9915364789',
         stage: 'Proposition',
@@ -111,6 +114,7 @@ class _LeadListScreenState extends State<LeadListScreen> {
         callLogs: [],
       ),
       Lead(
+        id: '4',
         name: 'Manish Roy',
         phone: '8634597216',
         stage: 'Won',
@@ -120,6 +124,7 @@ class _LeadListScreenState extends State<LeadListScreen> {
         callLogs: [],
       ),
       Lead(
+        id: '5',
         name: 'Anjali Sharma',
         phone: '7854129630',
         stage: 'New',
@@ -129,6 +134,7 @@ class _LeadListScreenState extends State<LeadListScreen> {
         callLogs: [],
       ),
       Lead(
+        id: '6',
         name: 'Vikas Patel',
         phone: '9021547836',
         stage: 'Qualified',
@@ -138,6 +144,7 @@ class _LeadListScreenState extends State<LeadListScreen> {
         callLogs: [],
       ),
       Lead(
+        id: '7',
         name: 'Neha Gupta',
         phone: '9765432180',
         stage: 'Proposition',
@@ -147,6 +154,7 @@ class _LeadListScreenState extends State<LeadListScreen> {
         callLogs: [],
       ),
       Lead(
+        id: '8',
         name: 'Ramesh Kumar',
         phone: '8897456123',
         stage: 'Negotiation',
@@ -156,6 +164,7 @@ class _LeadListScreenState extends State<LeadListScreen> {
         callLogs: [],
       ),
       Lead(
+        id: '9',
         name: 'Sonal Singh',
         phone: '9812345678',
         stage: 'Won',
@@ -165,6 +174,7 @@ class _LeadListScreenState extends State<LeadListScreen> {
         callLogs: [],
       ),
       Lead(
+        id: '10',
         name: 'Amit Joshi',
         phone: '9123456789',
         stage: 'Lost',
@@ -310,8 +320,12 @@ class _LeadListScreenState extends State<LeadListScreen> {
       );
     } else if (sortBy == 'Date') {
       temp.sort(
-        (a, b) =>
-            sortAscending ? a.date.compareTo(b.date) : b.date.compareTo(a.date),
+        (a, b) {
+          if (a.date == null && b.date == null) return 0;
+          if (a.date == null) return 1;
+          if (b.date == null) return -1;
+          return sortAscending ? a.date!.compareTo(b.date!) : b.date!.compareTo(a.date!);
+        },
       );
     }
 
@@ -467,13 +481,13 @@ class _LeadListScreenState extends State<LeadListScreen> {
                                             ),
                                             decoration: BoxDecoration(
                                               color: ColorUtils.getStageColor(
-                                                lead.stage,
+                                                lead.stage ?? 'New',
                                               ),
                                               borderRadius:
                                                   BorderRadius.circular(8),
                                             ),
                                             child: Text(
-                                              lead.stage,
+                                              lead.stage ?? 'New',
                                               style: const TextStyle(
                                                 color: Colors.white,
                                                 fontSize: 12,
@@ -513,7 +527,7 @@ class _LeadListScreenState extends State<LeadListScreen> {
 
                                           const Spacer(),
                                           Text(
-                                            _formatDate(lead.date),
+                                            lead.date != null ? _formatDate(lead.date!) : 'N/A',
                                             style: TextStyle(
                                               color: Colors.grey[600],
                                               fontSize: 12,

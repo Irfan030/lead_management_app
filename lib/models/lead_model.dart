@@ -34,17 +34,18 @@ class CallLog {
 }
 
 class Lead {
+  final String id;
   final String name;
   final String? address;
   final String phone;
   final String? companyName;
   final String? email;
   final String? imageUrl;
-  final String stage;
-  final DateTime date;
-  final LeadStatus status;
-  final LeadTag tag;
-  final LeadSource source;
+  final String? stage;
+  final DateTime? date;
+  final LeadStatus? status;
+  final LeadTag? tag;
+  final LeadSource? source;
   final List<String> notes;
   final DateTime? followUpDate;
   final int leadScore;
@@ -53,14 +54,15 @@ class Lead {
   final List<CallLog> callLogs;
 
   Lead({
+    required this.id,
     required this.name,
     this.address,
     required this.phone,
     this.email,
     this.companyName,
     this.imageUrl,
-    required this.stage,
-    required this.date,
+    this.stage,
+    this.date,
     this.status = LeadStatus.newLead,
     this.tag = LeadTag.cold,
     this.source = LeadSource.other,

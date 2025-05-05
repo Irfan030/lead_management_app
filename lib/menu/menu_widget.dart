@@ -17,7 +17,6 @@ class MenuWidget extends StatelessWidget {
       _DrawerItem('Invoices', Icons.request_quote_outlined),
       _DrawerItem('Activity', Icons.timeline_outlined),
       _DrawerItem('Reports', Icons.bar_chart_outlined),
-      _DrawerItem('Contact', Icons.contact_mail_outlined),
     ];
 
     return Container(
@@ -32,10 +31,8 @@ class MenuWidget extends StatelessWidget {
                 mainAxisSize: MainAxisSize.max,
                 children: [
                   const SizedBox(height: 40),
-
                   CircleAvatar(
                     radius: 40,
-
                     backgroundImage: AssetImage(AppData.profile),
                   ),
                   const SizedBox(height: 10),
@@ -50,7 +47,6 @@ class MenuWidget extends StatelessWidget {
                 ],
               ),
             ),
-
             const SizedBox(height: 30),
             Expanded(
               child: ListView.builder(

@@ -148,7 +148,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '\$ ${invoice['amount'].toStringAsFixed(2)}',
+                    'R ${invoice['amount'].toStringAsFixed(2)}',
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ],

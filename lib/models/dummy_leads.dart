@@ -4,6 +4,7 @@ import 'package:leads_management_app/models/lead_model.dart';
 List<Lead> getDummyLeads() {
   return [
     Lead(
+      id: '1',
       name: 'Jons Miley',
       phone: '8563412547',
       stage: 'New',
@@ -43,6 +44,7 @@ List<Lead> getDummyLeads() {
       ],
     ),
     Lead(
+      id: '2',
       name: "Dixit's Opportunity",
       phone: '9845632175',
       stage: 'Qualified',
@@ -75,6 +77,7 @@ List<Lead> getDummyLeads() {
       ],
     ),
     Lead(
+      id: '3',
       name: 'Rahul',
       phone: '9915364789',
       stage: 'Proposition',
@@ -84,6 +87,7 @@ List<Lead> getDummyLeads() {
       callLogs: [],
     ),
     Lead(
+      id: '4',
       name: 'Manish Roy',
       phone: '8634597216',
       stage: 'Won',
@@ -93,6 +97,7 @@ List<Lead> getDummyLeads() {
       callLogs: [],
     ),
     Lead(
+      id: '5',
       name: 'Anjali Sharma',
       phone: '7854129630',
       stage: 'New',
@@ -102,6 +107,7 @@ List<Lead> getDummyLeads() {
       callLogs: [],
     ),
     Lead(
+      id: '6',
       name: 'Vikas Patel',
       phone: '9021547836',
       stage: 'Qualified',
@@ -111,6 +117,7 @@ List<Lead> getDummyLeads() {
       callLogs: [],
     ),
     Lead(
+      id: '7',
       name: 'Neha Gupta',
       phone: '9765432180',
       stage: 'Proposition',
@@ -120,6 +127,7 @@ List<Lead> getDummyLeads() {
       callLogs: [],
     ),
     Lead(
+      id: '8',
       name: 'Ramesh Kumar',
       phone: '8897456123',
       stage: 'Negotiation',
@@ -129,6 +137,7 @@ List<Lead> getDummyLeads() {
       callLogs: [],
     ),
     Lead(
+      id: '9',
       name: 'Sonal Singh',
       phone: '9812345678',
       stage: 'Won',
@@ -138,6 +147,7 @@ List<Lead> getDummyLeads() {
       callLogs: [],
     ),
     Lead(
+      id: '10',
       name: 'Amit Joshi',
       phone: '9123456789',
       stage: 'Lost',

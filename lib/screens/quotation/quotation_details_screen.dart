@@ -1,142 +1,307 @@
 import 'package:flutter/material.dart';
+import 'package:leads_management_app/models/quotation.dart';
+import 'package:leads_management_app/providers/quotation_provider.dart';
+import 'package:leads_management_app/screens/quotation/create_quotation.dart';
 import 'package:leads_management_app/widgets/appbar.dart';
+import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 
-class OrderDetailsScreen extends StatelessWidget {
-  final Map<String, dynamic> order;
+class QuotationDetailsScreen extends StatelessWidget {
+  final Quotation quotation;
 
-  const OrderDetailsScreen({Key? key, required this.order}) : super(key: key);
+  const QuotationDetailsScreen({Key? key, required this.quotation})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final isQuotation = order['type'] == 'Quotation';
-
     return Scaffold(
-      appBar: CustomAppBar(title: 'Order Detail'),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      appBar: CustomAppBar(title: 'Quotation Details'),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth > 600;
+          return Center(
+            child: Container(
+              width: isWide ? 600 : double.infinity,
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  // Header Section
+                  _buildHeaderSection(),
+                  const SizedBox(height: 20),
+
+                  // Customer Information
+                  _buildCustomerSection(),
+                  const SizedBox(height: 20),
+
+                  // Product Lines
+                  _buildProductLinesSection(),
+                  const SizedBox(height: 20),
+
+                  // Totals
+                  _buildTotalsSection(),
+                  const SizedBox(height: 20),
+
+                  // Notes and Terms
+                  _buildNotesAndTermsSection(),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+      bottomNavigationBar: _buildActionButtons(context),
+    );
+  }
+
+  Widget _buildHeaderSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Order Header
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      order['number'],
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isQuotation ? Colors.orange : Colors.green,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        order['type'],
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ],
+          Row(
+            children: [
+              Text(
+                quotation.number,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
-                const SizedBox(height: 12),
-                _buildInfoRow("Order Date", "04-Dec-2020"),
-                _buildInfoRow("Salesperson", "Demo User"),
-                _buildInfoRow("Customer", "Adrianna Hunt, Adrian Hall"),
-                _buildInfoRow("Payment Terms", "Immediate Payment"),
-                _buildInfoRow("Expiration Date", "25-Dec-2020"),
-              ],
+              ),
+              const Spacer(),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _getStatusColor(quotation.status),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  quotation.status,
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _buildInfoRow("Date", quotation.date.toString().split(' ')[0]),
+          _buildInfoRow(
+              "Valid Until", quotation.validUntil.toString().split(' ')[0]),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCustomerSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Customer Information",
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+          const SizedBox(height: 12),
+          if (quotation.lead != null) ...[
+            _buildInfoRow("Customer", quotation.lead!.name),
+            _buildInfoRow("Email", quotation.lead!.email),
+            _buildInfoRow("Phone", quotation.lead!.phone),
+          ],
+          if (quotation.opportunity != null) ...[
+            _buildInfoRow("Opportunity", quotation.opportunity!.name),
+            _buildInfoRow("Expected Revenue",
+                "R ${quotation.opportunity!.expectedRevenue}"),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProductLinesSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Product Details",
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+          const SizedBox(height: 12),
+          ...quotation.lines.map((line) => _buildProductLine(line)).toList(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProductLine(QuotationLine line) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            line.productName,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          Text(line.description),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Qty: ${line.quantity}"),
+              Text("Unit Price: R ${line.unitPrice}"),
+              Text("Tax: ${line.taxRate}%"),
+              Text("Subtotal: R ${line.subtotal.toStringAsFixed(2)}"),
+            ],
+          ),
+          const Divider(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTotalsSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+      ),
+      child: Column(
+        children: [
+          _buildTotalRow("Subtotal",
+              "R "+(quotation.totalAmount - quotation.totalTax).toStringAsFixed(2)),
+          _buildTotalRow("Tax", "R ${quotation.totalTax.toStringAsFixed(2)}"),
+          const Divider(),
+          _buildTotalRow(
+              "Total", "R ${quotation.totalAmount.toStringAsFixed(2)}",
+              isBold: true),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNotesAndTermsSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Notes",
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+          const SizedBox(height: 8),
+          Text(quotation.notes),
+          const SizedBox(height: 16),
+          const Text(
+            "Terms and Conditions",
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+          const SizedBox(height: 8),
+          Text(quotation.termsAndConditions),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButtons(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Expanded(
+            child: ElevatedButton.icon(
+              icon: const Icon(Icons.edit),
+              label: const Text('Edit'),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+              onPressed: () async {
+                final updated = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CreateQuotationScreen(
+                      quotation: quotation,
+                    ),
+                  ),
+                );
+                if (updated != null && updated is Quotation) {
+                  await context
+                      .read<QuotationProvider>()
+                      .updateQuotation(updated);
+                  Navigator.pop(context);
+                }
+              },
             ),
           ),
-
-          const SizedBox(height: 20),
-
-          // Product Details Section
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Product Details",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                ),
-                const Divider(height: 20),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 3,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
-                            "Training",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          Text("Training"),
-                          Text("Taxes: GST 5%"),
-                          Text("Qty: 1.0"),
-                        ],
+          const SizedBox(width: 8),
+          Expanded(
+            child: ElevatedButton.icon(
+              icon: const Icon(Icons.delete),
+              label: const Text('Delete'),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: () async {
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Delete Quotation'),
+                    content: const Text(
+                        'Are you sure you want to delete this quotation?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Cancel'),
                       ),
-                    ),
-                    Expanded(
-                      flex: 2,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: const [
-                          Text(
-                            "₹ 202,200.00",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          Text("Unit Price: ₹ 202,200.00"),
-                        ],
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red),
+                        child: const Text('Delete'),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                );
+                if (confirm == true) {
+                  await context
+                      .read<QuotationProvider>()
+                      .deleteQuotation(quotation.id);
+                  Navigator.pop(context);
+                }
+              },
             ),
           ),
-
-          const SizedBox(height: 20),
-
-          // Total Section
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
-            ),
-            child: Column(
-              children: [
-                _buildTotalRow("Untaxed Amount", "₹ 202,200.00"),
-                _buildTotalRow("Taxes", "₹ 10,110.00"),
-                const Divider(height: 20, thickness: 1),
-                _buildTotalRow("Total", "₹ 212,310.00", isBold: true),
-              ],
+          const SizedBox(width: 8),
+          Expanded(
+            child: ElevatedButton.icon(
+              icon: const Icon(Icons.share),
+              label: const Text('Share'),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+              onPressed: () async {
+                // TODO: Generate PDF and share
+                await Share.share(
+                    'Quotation: ${quotation.number}\nTotal: ₹${quotation.totalAmount.toStringAsFixed(2)}');
+              },
             ),
           ),
         ],
@@ -144,22 +309,22 @@ class OrderDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(String title, String value) {
+  Widget _buildInfoRow(String label, String? value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
           SizedBox(
-            width: 140,
+            width: 120,
             child: Text(
-              title,
+              label,
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.grey,
               ),
             ),
           ),
-          Expanded(child: Text(value, style: const TextStyle(fontSize: 15))),
+          Expanded(child: Text(value ?? 'N/A')),
         ],
       ),
     );
@@ -169,13 +334,12 @@ class OrderDetailsScreen extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded(
-            child: Text(
-              label,
-              style: TextStyle(
-                fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-              ),
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
             ),
           ),
           Text(
@@ -188,5 +352,22 @@ class OrderDetailsScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'draft':
+        return Colors.grey;
+      case 'sent':
+        return Colors.blue;
+      case 'accepted':
+        return Colors.green;
+      case 'rejected':
+        return Colors.red;
+      case 'expired':
+        return Colors.orange;
+      default:
+        return Colors.grey;
+    }
   }
 }

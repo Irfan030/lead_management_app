@@ -103,11 +103,11 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: _getStageColor(widget.lead.stage),
+                          color: _getStageColor(widget.lead.stage ?? 'New'),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          widget.lead.stage,
+                          widget.lead.stage ?? 'New',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 14,

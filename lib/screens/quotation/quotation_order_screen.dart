@@ -1,68 +1,93 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:leads_management_app/models/quotation.dart';
+import 'package:leads_management_app/providers/quotation_provider.dart';
+import 'package:leads_management_app/screens/quotation/create_quotation.dart';
 import 'package:leads_management_app/screens/quotation/quotation_details_screen.dart';
-
-import 'create_activity.dart';
+import 'package:leads_management_app/theme/colors.dart';
+import 'package:provider/provider.dart';
 
 class QuotationOrderScreen extends StatefulWidget {
+  const QuotationOrderScreen({Key? key}) : super(key: key);
+
   @override
   State<QuotationOrderScreen> createState() => _QuotationOrderScreenState();
 }
 
 class _QuotationOrderScreenState extends State<QuotationOrderScreen> {
-  final List<Map<String, dynamic>> allOrders = [
-    {
-      'type': 'Quotation',
-      'number': 'SO003',
-      'customer': 'Delta PC',
-      'amount': 377.50,
-    },
-    {
-      'type': 'Sale Order',
-      'number': 'SO004',
-      'customer': 'China Export',
-      'amount': 2240.00,
-    },
-    {
-      'type': 'Quotation',
-      'number': 'SO005',
-      'customer': 'Agrolait',
-      'amount': 405.00,
-    },
-    {
-      'type': 'Sale Order',
-      'number': 'SO006',
-      'customer': 'Think Big Systems',
-      'amount': 750.00,
-    },
-  ];
-
   String searchText = '';
   String filterType = 'All';
   bool sortAsc = true;
 
   @override
-  Widget build(BuildContext context) {
-    List<Map<String, dynamic>> filteredOrders = allOrders
-        .where(
-          (order) =>
-              (filterType == 'All' || order['type'] == filterType) &&
-              (order['customer'].toLowerCase().contains(
-                    searchText.toLowerCase(),
-                  ) ||
-                  order['number'].toLowerCase().contains(
-                    searchText.toLowerCase(),
-                  )),
-        )
-        .toList();
+  void initState() {
+    super.initState();
+    // Load data when screen is first shown
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<QuotationProvider>().loadData();
+    });
+  }
 
-    filteredOrders.sort(
-      (a, b) => sortAsc
-          ? a['amount'].compareTo(b['amount'])
-          : b['amount'].compareTo(a['amount']),
-    );
+  @override
+  Widget build(BuildContext context) {
+    final quotationProvider = context.watch<QuotationProvider>();
+    final quotations = quotationProvider.quotations;
+    final salesOrders = quotationProvider.salesOrders;
+    final isLoading = quotationProvider.isLoading;
+    final error = quotationProvider.error;
+
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Error: $error'),
+            ElevatedButton(
+              onPressed: () => quotationProvider.loadData(),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    List<dynamic> items = [];
+    if (filterType == 'All') {
+      items = [...quotations, ...salesOrders];
+    } else if (filterType == 'Quotation') {
+      items = quotations;
+    } else {
+      items = salesOrders;
+    }
+
+    items = items.where((item) {
+      final number =
+          item is Quotation ? item.number : (item as SalesOrder).number;
+      return number.toLowerCase().contains(searchText.toLowerCase());
+    }).toList();
+
+    items.sort((a, b) {
+      final amountA =
+          a is Quotation ? a.totalAmount : (a as SalesOrder).totalAmount;
+      final amountB =
+          b is Quotation ? b.totalAmount : (b as SalesOrder).totalAmount;
+      return sortAsc ? amountA.compareTo(amountB) : amountB.compareTo(amountA);
+    });
 
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColor.mainColor,
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => const CreateQuotationScreen()),
+        ),
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -71,11 +96,12 @@ class _QuotationOrderScreenState extends State<QuotationOrderScreen> {
             const SizedBox(height: 10),
             Expanded(
               child: ListView.builder(
-                itemCount: filteredOrders.length,
+                itemCount: items.length,
                 itemBuilder: (context, index) {
+                  final item = items[index];
                   return GestureDetector(
-                    onTap: () => _viewDetails(filteredOrders[index]),
-                    child: _buildOrderCard(filteredOrders[index]),
+                    onTap: () => _viewDetails(item),
+                    child: _buildItemCard(item),
                   );
                 },
               ),
@@ -94,7 +120,7 @@ class _QuotationOrderScreenState extends State<QuotationOrderScreen> {
             onChanged: (value) => setState(() => searchText = value),
             decoration: InputDecoration(
               prefixIcon: const Icon(Icons.search),
-              hintText: "Search by customer/order no.",
+              hintText: "Search by number",
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -109,7 +135,7 @@ class _QuotationOrderScreenState extends State<QuotationOrderScreen> {
           itemBuilder: (_) => const [
             PopupMenuItem(value: 'All', child: Text('All')),
             PopupMenuItem(value: 'Quotation', child: Text('Quotation')),
-            PopupMenuItem(value: 'Sale Order', child: Text('Sale Order')),
+            PopupMenuItem(value: 'Sales Order', child: Text('Sales Order')),
           ],
         ),
         IconButton(
@@ -120,8 +146,12 @@ class _QuotationOrderScreenState extends State<QuotationOrderScreen> {
     );
   }
 
-  Widget _buildOrderCard(Map<String, dynamic> order) {
-    final isQuotation = order['type'] == 'Quotation';
+  Widget _buildItemCard(dynamic item) {
+    final isQuotation = item is Quotation;
+    final number = isQuotation ? item.number : (item as SalesOrder).number;
+    final status = isQuotation ? item.status : item.status;
+    final amount = isQuotation ? item.totalAmount : item.totalAmount;
+    final date = isQuotation ? item.date : item.date;
 
     return Container(
       decoration: BoxDecoration(
@@ -130,72 +160,65 @@ class _QuotationOrderScreenState extends State<QuotationOrderScreen> {
       ),
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(12),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Type Badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: isQuotation ? Colors.orange : Colors.blue,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              order['type'],
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          // Info Column
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  order['number'],
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+          Row(
+            children: [
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isQuotation ? Colors.orange : Colors.blue,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  isQuotation ? 'Quotation' : 'Sales Order',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                Text(
-                  order['customer'],
-                  style: GoogleFonts.poppins(color: Colors.grey[700]),
+              ),
+              const Spacer(),
+              Text(
+                number,
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  '₹ ${order['amount'].toStringAsFixed(2)}',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-          // Action Icons
-          IconButton(
-            icon: const Icon(Icons.add, color: Colors.blue),
-            onPressed: () => _createActivity(order),
+          const SizedBox(height: 8),
+          Text(
+            'Status: $status',
+            style: GoogleFonts.poppins(color: Colors.grey[700]),
+          ),
+          Text(
+            'Date: ${date.toString().split(' ')[0]}',
+            style: GoogleFonts.poppins(color: Colors.grey[700]),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'R ${amount.toStringAsFixed(2)}',
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
           ),
         ],
       ),
     );
   }
 
-  void _createActivity(Map<String, dynamic> order) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => CreateActivityScreen(), // placeholder
-      ),
-    );
-  }
-
-  void _viewDetails(Map<String, dynamic> order) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => OrderDetailsScreen(order: order)),
-    );
+  void _viewDetails(dynamic item) {
+    if (item is Quotation) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => QuotationDetailsScreen(quotation: item),
+        ),
+      );
+    } else {
+      // TODO: Navigate to Sales Order Details Screen
+    }
   }
 }

@@ -7,7 +7,6 @@ import 'package:leads_management_app/screens/report/reports_screen.dart';
 import 'package:leads_management_app/theme/colors.dart';
 
 import 'activity/activity_screen.dart';
-import 'contact_screen.dart';
 import 'invoice/invoices_screen.dart';
 import 'lead/lead_screen.dart';
 import 'opportunity/opportunity_screen.dart';
@@ -68,21 +67,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _getScreen(String screen) {
     switch (screen) {
       case 'Customer':
-        return LeadListScreen();
+        return const LeadListScreen();
       case 'Opportunity':
-        return OpportunityListScreen();
+        return const OpportunityScreen();
       case 'Quotation/Order':
-        return QuotationOrderScreen();
+        return const QuotationOrderScreen();
       case 'Invoices':
-        return InvoicesScreen();
+        return const InvoicesScreen();
       case 'Activity':
         return ActivityScreen();
       case 'Reports':
-        return ReportsScreen();
-      case 'Contact':
-        return ContactInfo();
+        return const ReportsScreen();
       case 'Leads':
-        return LeadListScreen();
+        return const LeadListScreen();
       case 'Dashboard':
       default:
         return _dashboardBody();
@@ -131,7 +128,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Container(
       color: AppColor.scaffoldBackground,
-
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -371,7 +367,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                       ),
                       Text(
-                        "\$${e["amount"]}",
+                        "R${e["amount"]}",
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           color: Colors.grey[700],

@@ -3,16 +3,22 @@ import 'package:intl/intl.dart';
 import 'package:leads_management_app/theme/colors.dart';
 
 class Activity {
-  final String title;
-  final String details;
+  final String type;
+  final String desc;
   final DateTime dateTime;
   final bool isCompleted;
+  final IconData icon;
+  final Color color;
+  final String? assignedTo;
 
   Activity({
-    required this.title,
-    required this.details,
+    required this.type,
+    required this.desc,
     required this.dateTime,
     this.isCompleted = false,
+    required this.icon,
+    required this.color,
+    this.assignedTo,
   });
 }
 
@@ -24,29 +30,40 @@ class ActivityScreen extends StatefulWidget {
 class _ActivityScreenState extends State<ActivityScreen> {
   List<Activity> activities = [
     Activity(
-      title: 'Cold Call',
-      details:
+      type: 'Call',
+      desc:
           'Reached out to discuss product demo. Lead showed interest in pricing.',
-      dateTime: DateTime.now().subtract(Duration(days: 3)),
+      dateTime: DateTime.now().subtract(const Duration(days: 3)),
       isCompleted: true,
+      icon: Icons.phone,
+      color: Colors.red,
+      assignedTo: 'Demo User',
     ),
     Activity(
-      title: 'Send Proposal',
-      details:
-          'Shared pricing and contract details via email. Awaiting response.',
+      type: 'Email',
+      desc: 'Shared pricing and contract details via email. Awaiting response.',
       dateTime: DateTime.now(),
       isCompleted: false,
+      icon: Icons.email,
+      color: Colors.green,
+      assignedTo: 'Demo User',
     ),
     Activity(
-      title: 'Product Demo',
-      details: 'Scheduled Zoom call for a live demo on Friday at 2 PM.',
-      dateTime: DateTime.now().add(Duration(days: 1)),
+      type: 'Meeting',
+      desc: 'Scheduled Zoom call for a live demo on Friday at 2 PM.',
+      dateTime: DateTime.now().add(const Duration(days: 1)),
       isCompleted: false,
+      icon: Icons.groups,
+      color: Colors.blue,
+      assignedTo: 'Demo User',
     ),
   ];
 
-  DateTime currentDate = DateTime.now(); // holds current month & year
-  int? selectedDay; // holds selected day (date)
+  DateTime currentDate = DateTime.now();
+  int? selectedDay;
+  String filterType = 'All';
+  String filterStatus = 'All';
+  String filterUser = 'All';
 
   List<int> getDaysInMonth(DateTime date) {
     final lastDay = DateTime(date.year, date.month + 1, 0);
@@ -55,26 +72,31 @@ class _ActivityScreenState extends State<ActivityScreen> {
 
   List<Activity> get filteredActivities {
     return activities.where((activity) {
-      if (selectedDay == null) return true;
-      return activity.dateTime.year == currentDate.year &&
-          activity.dateTime.month == currentDate.month &&
-          activity.dateTime.day == selectedDay;
+      final matchesType = filterType == 'All' || activity.type == filterType;
+      final matchesStatus = filterStatus == 'All' ||
+          (filterStatus == 'Completed'
+              ? activity.isCompleted
+              : !activity.isCompleted);
+      final matchesUser =
+          filterUser == 'All' || activity.assignedTo == filterUser;
+      final matchesDay = selectedDay == null ||
+          (activity.dateTime.year == currentDate.year &&
+              activity.dateTime.month == currentDate.month &&
+              activity.dateTime.day == selectedDay);
+      return matchesType && matchesStatus && matchesUser && matchesDay;
     }).toList();
   }
 
   void _changeMonth(int offset) {
     setState(() {
       currentDate = DateTime(currentDate.year, currentDate.month + offset);
-      selectedDay = null; // Reset day when changing month
+      selectedDay = null;
     });
   }
 
   void _showActivityBottomSheet({Activity? existingActivity, int? index}) {
-    final TextEditingController nameController = TextEditingController(
-      text: existingActivity?.title ?? '',
-    );
-    final TextEditingController detailsController = TextEditingController(
-      text: existingActivity?.details ?? '',
+    final TextEditingController descController = TextEditingController(
+      text: existingActivity?.desc ?? '',
     );
 
     DateTime selectedDate = existingActivity?.dateTime ?? DateTime.now();
@@ -82,10 +104,13 @@ class _ActivityScreenState extends State<ActivityScreen> {
         ? TimeOfDay.fromDateTime(existingActivity.dateTime)
         : TimeOfDay.now();
 
+    String selectedType = existingActivity?.type ?? 'Call';
+    String selectedUser = existingActivity?.assignedTo ?? 'Demo User';
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
@@ -101,37 +126,75 @@ class _ActivityScreenState extends State<ActivityScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(12),
+                    const Text(
+                      'Activity Type',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: TextField(
-                        controller: nameController,
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          hintText: 'Follow-up task name',
+                    ),
+                    const SizedBox(height: 8),
+                    DropdownButtonFormField<String>(
+                      value: selectedType,
+                      items: ['Call', 'Email', 'Meeting', 'Task'].map((type) {
+                        IconData icon;
+                        Color color;
+                        switch (type) {
+                          case 'Call':
+                            icon = Icons.phone;
+                            color = Colors.red;
+                            break;
+                          case 'Email':
+                            icon = Icons.email;
+                            color = Colors.green;
+                            break;
+                          case 'Meeting':
+                            icon = Icons.groups;
+                            color = Colors.blue;
+                            break;
+                          default:
+                            icon = Icons.task;
+                            color = Colors.orange;
+                        }
+                        return DropdownMenuItem(
+                          value: type,
+                          child: Row(
+                            children: [
+                              Icon(icon, color: color),
+                              const SizedBox(width: 8),
+                              Text(type),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (val) =>
+                          setSheetState(() => selectedType = val!),
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 15),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(12),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Description',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: TextField(
-                        controller: detailsController,
-                        maxLines: 4,
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          hintText: 'Details',
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: descController,
+                      maxLines: 4,
+                      decoration: InputDecoration(
+                        hintText: 'Enter activity details',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
                     const Text(
                       'When to remind?',
                       style: TextStyle(
@@ -139,11 +202,11 @@ class _ActivityScreenState extends State<ActivityScreen> {
                         fontSize: 16,
                       ),
                     ),
-                    const SizedBox(height: 15),
+                    const SizedBox(height: 8),
                     Row(
                       children: [
                         Expanded(
-                          child: GestureDetector(
+                          child: InkWell(
                             onTap: () async {
                               final DateTime? picked = await showDatePicker(
                                 context: context,
@@ -161,29 +224,24 @@ class _ActivityScreenState extends State<ActivityScreen> {
                                 horizontal: 12,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.grey[200],
+                                border: Border.all(color: Colors.grey),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(
-                                    Icons.date_range,
-                                    color: Colors.blue,
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Text(
-                                    DateFormat(
-                                      'dd MMM, yyyy',
-                                    ).format(selectedDate),
-                                  ),
+                                  const Icon(Icons.date_range,
+                                      color: Colors.blue),
+                                  const SizedBox(width: 8),
+                                  Text(DateFormat('dd MMM, yyyy')
+                                      .format(selectedDate)),
                                 ],
                               ),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 15),
+                        const SizedBox(width: 8),
                         Expanded(
-                          child: GestureDetector(
+                          child: InkWell(
                             onTap: () async {
                               final TimeOfDay? picked = await showTimePicker(
                                 context: context,
@@ -199,16 +257,14 @@ class _ActivityScreenState extends State<ActivityScreen> {
                                 horizontal: 12,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.grey[200],
+                                border: Border.all(color: Colors.grey),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(
-                                    Icons.access_time,
-                                    color: Colors.blue,
-                                  ),
-                                  const SizedBox(width: 10),
+                                  const Icon(Icons.access_time,
+                                      color: Colors.blue),
+                                  const SizedBox(width: 8),
                                   Text(selectedTime.format(context)),
                                 ],
                               ),
@@ -216,6 +272,31 @@ class _ActivityScreenState extends State<ActivityScreen> {
                           ),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Assigned To',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    DropdownButtonFormField<String>(
+                      value: selectedUser,
+                      items: ['Demo User', 'User A', 'User B'].map((user) {
+                        return DropdownMenuItem(
+                          value: user,
+                          child: Text(user),
+                        );
+                      }).toList(),
+                      onChanged: (val) =>
+                          setSheetState(() => selectedUser = val!),
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 20),
                     Row(
@@ -238,7 +319,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                               child: const Text('DELETE'),
                             ),
                           ),
-                        if (existingActivity != null) const SizedBox(width: 15),
+                        if (existingActivity != null) const SizedBox(width: 8),
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () {
@@ -249,11 +330,38 @@ class _ActivityScreenState extends State<ActivityScreen> {
                                 selectedTime.hour,
                                 selectedTime.minute,
                               );
+
+                              IconData icon;
+                              Color color;
+                              switch (selectedType) {
+                                case 'Call':
+                                  icon = Icons.phone;
+                                  color = Colors.red;
+                                  break;
+                                case 'Email':
+                                  icon = Icons.email;
+                                  color = Colors.green;
+                                  break;
+                                case 'Meeting':
+                                  icon = Icons.groups;
+                                  color = Colors.blue;
+                                  break;
+                                default:
+                                  icon = Icons.task;
+                                  color = Colors.orange;
+                              }
+
                               final newActivity = Activity(
-                                title: nameController.text.trim(),
-                                details: detailsController.text.trim(),
+                                type: selectedType,
+                                desc: descController.text.trim(),
                                 dateTime: newDateTime,
+                                isCompleted:
+                                    existingActivity?.isCompleted ?? false,
+                                icon: icon,
+                                color: color,
+                                assignedTo: selectedUser,
                               );
+
                               setState(() {
                                 if (existingActivity != null) {
                                   activities[index!] = newActivity;
@@ -287,6 +395,9 @@ class _ActivityScreenState extends State<ActivityScreen> {
   @override
   Widget build(BuildContext context) {
     final daysInMonth = getDaysInMonth(currentDate);
+    final users = ['All', 'Demo User', 'User A', 'User B'];
+    final types = ['All', 'Call', 'Email', 'Meeting', 'Task'];
+    final statuses = ['All', 'Completed', 'Pending'];
 
     return Scaffold(
       backgroundColor: AppColor.scaffoldBackground,
@@ -295,13 +406,13 @@ class _ActivityScreenState extends State<ActivityScreen> {
         children: [
           // Month Selector UI
           Container(
-            color: AppColor.secondaryColor,
+            color: AppColor.mainColor,
             child: Column(
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
-                    vertical: 5,
+                    vertical: 8,
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -336,67 +447,164 @@ class _ActivityScreenState extends State<ActivityScreen> {
                   ),
                 ),
 
-                // Days Strip UI
-                SizedBox(
-                  height: 80,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
-                    ),
-                    itemCount: daysInMonth.length,
-                    itemBuilder: (context, index) {
-                      final day = daysInMonth[index];
-                      final date = DateTime(
-                        currentDate.year,
-                        currentDate.month,
-                        day,
-                      );
-                      final isSelected = selectedDay == day;
+                // Days Strip UI + Clear Button
+                Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 80,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                          itemCount: daysInMonth.length,
+                          itemBuilder: (context, index) {
+                            final day = daysInMonth[index];
+                            final date = DateTime(
+                              currentDate.year,
+                              currentDate.month,
+                              day,
+                            );
+                            final isSelected = selectedDay == day;
 
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            selectedDay = day;
-                          });
-                        },
-                        child: Container(
-                          width: 60,
-                          margin: const EdgeInsets.only(right: 10),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? Colors.blue.shade700
-                                : Colors.grey[200],
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                DateFormat('E').format(date),
-                                style: TextStyle(
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  selectedDay = day;
+                                });
+                              },
+                              child: Container(
+                                width: 60,
+                                margin: const EdgeInsets.only(right: 10),
+                                decoration: BoxDecoration(
                                   color: isSelected
-                                      ? Colors.white
-                                      : Colors.black,
-                                  fontWeight: FontWeight.w500,
+                                      ? Colors.blue.shade700
+                                      : Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      DateFormat('E').format(date),
+                                      style: TextStyle(
+                                        color: isSelected
+                                            ? Colors.white
+                                            : Colors.black,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    Text(
+                                      '$day',
+                                      style: TextStyle(
+                                        color: isSelected
+                                            ? Colors.white
+                                            : Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              const SizedBox(height: 5),
-                              Text(
-                                '$day',
-                                style: TextStyle(
-                                  color: isSelected
-                                      ? Colors.white
-                                      : Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
+                            );
+                          },
                         ),
-                      );
-                    },
+                      ),
+                    ),
+                    if (selectedDay != null)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: IconButton(
+                          icon: const Icon(Icons.clear, color: Colors.white),
+                          tooltip: 'Clear date filter',
+                          onPressed: () {
+                            setState(() {
+                              selectedDay = null;
+                            });
+                          },
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // Search and Filter Bar
+          Container(
+            padding: const EdgeInsets.all(16),
+            color: Colors.white,
+            child: Row(
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: filterType,
+                    items: types
+                        .map((t) => DropdownMenuItem(
+                              value: t,
+                              child: Text(t),
+                            ))
+                        .toList(),
+                    onChanged: (val) => setState(() => filterType = val!),
+                    decoration: InputDecoration(
+                      labelText: 'Type',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 8,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: filterStatus,
+                    items: statuses
+                        .map((s) => DropdownMenuItem(
+                              value: s,
+                              child: Text(s),
+                            ))
+                        .toList(),
+                    onChanged: (val) => setState(() => filterStatus = val!),
+                    decoration: InputDecoration(
+                      labelText: 'Status',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 8,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: filterUser,
+                    items: users
+                        .map((u) => DropdownMenuItem(
+                              value: u,
+                              child: Text(u),
+                            ))
+                        .toList(),
+                    onChanged: (val) => setState(() => filterUser = val!),
+                    decoration: InputDecoration(
+                      labelText: 'User',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 8,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -413,7 +621,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                     ),
                   )
                 : ListView.builder(
-                    padding: const EdgeInsets.only(top: 10),
+                    padding: const EdgeInsets.all(16),
                     itemCount: filteredActivities.length,
                     itemBuilder: (context, index) {
                       final activity = filteredActivities[index];
@@ -426,45 +634,104 @@ class _ActivityScreenState extends State<ActivityScreen> {
                           );
                         },
                         child: Card(
-                          color: activity.isCompleted
-                              ? Colors.grey.shade300
-                              : Colors.white,
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
+                          color: AppColor.cardBackground,
+                          margin: const EdgeInsets.only(bottom: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Padding(
-                            padding: const EdgeInsets.all(12),
+                            padding: const EdgeInsets.all(16),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  activity.title,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: activity.color.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Icon(
+                                        activity.icon,
+                                        color: activity.color,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            activity.type,
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            activity.assignedTo ?? 'Unassigned',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: Colors.grey[600],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: activity.isCompleted
+                                            ? Colors.green.withOpacity(0.1)
+                                            : Colors.orange.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        activity.isCompleted
+                                            ? 'Completed'
+                                            : 'Pending',
+                                        style: TextStyle(
+                                          color: activity.isCompleted
+                                              ? Colors.green
+                                              : Colors.orange,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: 8),
+                                const SizedBox(height: 12),
                                 Text(
-                                  activity.details,
+                                  activity.desc,
                                   style: const TextStyle(
                                     fontSize: 14,
-                                    color: Colors.grey,
+                                    color: Colors.black87,
                                   ),
                                 ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  DateFormat(
-                                    'dd MMM, yyyy hh:mm a',
-                                  ).format(activity.dateTime),
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.black54,
-                                  ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.access_time,
+                                      size: 16,
+                                      color: Colors.grey[600],
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      DateFormat('dd MMM, yyyy hh:mm a')
+                                          .format(activity.dateTime),
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -479,7 +746,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColor.mainColor,
         onPressed: () => _showActivityBottomSheet(),
-        child: Icon(Icons.add, color: AppColor.scaffoldBackground),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }

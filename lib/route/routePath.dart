@@ -1,6 +1,6 @@
 class RoutePath {
   static const String splash = '/';
-  static const String dashboard = '/dashboard';
+  static const String dashboard = '/';
   static const String opportunity = '/opportunity';
   static const String quotation = '/quotation';
   static const String invoices = '/invoices';
@@ -8,4 +8,5 @@ class RoutePath {
   static const String reports = '/reports';
   static const String contactInfo = '/contact-info';
   static const String lead = '/lead';
+  static const String attendance = '/attendance';
 }

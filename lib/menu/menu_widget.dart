@@ -10,13 +10,15 @@ class MenuWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<_DrawerItem> drawerItems = [
-      _DrawerItem('Dashboard', Icons.dashboard),
+      _DrawerItem('Dashboard', Icons.dashboard_outlined),
       _DrawerItem('Leads', Icons.people_alt_outlined),
-      _DrawerItem('Opportunity', Icons.business_center_outlined),
-      _DrawerItem('Quotation/Order', Icons.receipt_long_outlined),
-      _DrawerItem('Invoices', Icons.request_quote_outlined),
-      _DrawerItem('Activity', Icons.timeline_outlined),
-      _DrawerItem('Reports', Icons.bar_chart_outlined),
+      _DrawerItem('Opportunity', Icons.trending_up_outlined),
+      _DrawerItem('Quotation/Order', Icons.description_outlined),
+      _DrawerItem('Invoices', Icons.receipt_long_outlined),
+      _DrawerItem('Activity', Icons.event_note_outlined),
+      _DrawerItem('Reports', Icons.analytics_outlined),
+      _DrawerItem('Attendance', Icons.calendar_today_outlined),
+      _DrawerItem('Map', Icons.location_on_outlined),
     ];
 
     return Container(

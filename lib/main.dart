@@ -6,6 +6,7 @@ import 'package:leads_management_app/route/routePath.dart';
 import 'package:leads_management_app/theme/colors.dart';
 import 'package:leads_management_app/theme/sizeConfig.dart';
 import 'package:provider/provider.dart';
+import 'package:leads_management_app/providers/attendance_provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,9 +35,10 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => QuotationProvider()),
+        ChangeNotifierProvider(create: (_) => AttendanceProvider()),
       ],
       child: MaterialApp(
-        title: 'Lead Management',
+        title: 'Lead Manager',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primarySwatch: Colors.blue,

@@ -52,6 +52,8 @@ class Lead {
   final List<Activity> activities;
   final List<Note> notesList;
   final List<CallLog> callLogs;
+  final double? latitude;
+  final double? longitude;
 
   Lead({
     required this.id,
@@ -72,5 +74,7 @@ class Lead {
     this.activities = const [],
     this.notesList = const [],
     this.callLogs = const [],
+    this.latitude,
+    this.longitude,
   });
 }

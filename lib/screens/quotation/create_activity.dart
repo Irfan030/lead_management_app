@@ -23,8 +23,7 @@ class _CreateActivityScreenState extends State<CreateActivityScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: 'Create Activity'),
-
+      appBar: const CustomAppBar(title: 'Create Activity'),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(

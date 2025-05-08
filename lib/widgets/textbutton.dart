@@ -17,7 +17,6 @@ class TextButtonWidget extends StatelessWidget {
     this.textColor = AppColor.textPrimary,
     this.fontSize = 14,
     this.fontFamily = "PoppinsRegular",
-
     this.letterSpacing = 1.0,
     this.textAlign = TextAlign.center,
   });
@@ -29,7 +28,7 @@ class TextButtonWidget extends StatelessWidget {
       style: TextButton.styleFrom(
         foregroundColor: textColor,
         padding: EdgeInsets.zero,
-        minimumSize: Size(0, 0),
+        minimumSize: const Size(0, 0),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
       child: Text(

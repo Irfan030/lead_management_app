@@ -43,31 +43,30 @@ class DefaultTextInput extends StatelessWidget {
         fillColor: Colors.white,
         hintText: hint,
         labelText: label,
-
-        labelStyle: TextStyle(
+        labelStyle: const TextStyle(
           color: AppColor.dividerColor,
           fontSize: 14,
           fontFamily: "PoppinsMedium",
         ),
-        hintStyle: TextStyle(
+        hintStyle: const TextStyle(
           color: AppColor.secondaryColor,
           fontSize: 12,
           fontFamily: "PoppinsRegular",
         ),
         enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: AppColor.secondaryColor),
+          borderSide: const BorderSide(color: AppColor.secondaryColor),
           borderRadius: BorderRadius.circular(10.0),
         ),
         focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: AppColor.secondaryColor),
+          borderSide: const BorderSide(color: AppColor.secondaryColor),
           borderRadius: BorderRadius.circular(10.0),
         ),
         errorBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: AppColor.secondaryColor),
+          borderSide: const BorderSide(color: AppColor.secondaryColor),
           borderRadius: BorderRadius.circular(10.0),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: AppColor.secondaryColor),
+          borderSide: const BorderSide(color: AppColor.secondaryColor),
           borderRadius: BorderRadius.circular(10.0),
         ),
       ),

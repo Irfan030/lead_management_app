@@ -33,7 +33,7 @@ class DefaultDropDown<T> extends StatelessWidget {
       child: DropdownButtonFormField(
         value: value == "" ? null : value,
         validator: (value) => validator ? errorMsg : null,
-        icon: Icon(Icons.keyboard_arrow_down_rounded),
+        icon: const Icon(Icons.keyboard_arrow_down_rounded),
         decoration: InputDecoration(
           contentPadding: const EdgeInsets.symmetric(
             vertical: 0.0,
@@ -47,19 +47,19 @@ class DefaultDropDown<T> extends StatelessWidget {
             fontFamily: AppData.openSansMedium,
           ),
           enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: AppColor.secondaryColor),
+            borderSide: const BorderSide(color: AppColor.secondaryColor),
             borderRadius: BorderRadius.circular(10.0),
           ),
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: AppColor.secondaryColor),
+            borderSide: const BorderSide(color: AppColor.secondaryColor),
             borderRadius: BorderRadius.circular(10.0),
           ),
           errorBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: AppColor.secondaryColor),
+            borderSide: const BorderSide(color: AppColor.secondaryColor),
             borderRadius: BorderRadius.circular(10.0),
           ),
           focusedErrorBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: AppColor.secondaryColor),
+            borderSide: const BorderSide(color: AppColor.secondaryColor),
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),

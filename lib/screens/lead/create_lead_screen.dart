@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart' hide Location;
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:leads_management_app/models/lead_model.dart';
 import 'package:leads_management_app/theme/colors.dart';
 import 'package:leads_management_app/widgets/appbar.dart';
+import 'package:location/location.dart';
 
 class CreateLeadScreen extends StatefulWidget {
   final Lead? lead;
@@ -19,6 +22,10 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
   final TextEditingController _companyNameController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
+  final Location _location = Location();
+  LatLng? _selectedLocation;
+  String? _address;
+  bool _isLoadingLocation = false;
 
   String? _stage;
   DateTime? _date;
@@ -55,10 +62,56 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
     }
   }
 
+  Future<void> _getCurrentLocation() async {
+    setState(() => _isLoadingLocation = true);
+    try {
+      final location = await _location.getLocation();
+      final placemarks = await placemarkFromCoordinates(
+        location.latitude!,
+        location.longitude!,
+      );
+
+      if (placemarks.isNotEmpty) {
+        final place = placemarks.first;
+        setState(() {
+          _selectedLocation = LatLng(location.latitude!, location.longitude!);
+          _address = '${place.street}, ${place.locality}, ${place.country}';
+          _addressController.text = _address!;
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error getting location: ${e.toString()}')),
+      );
+    } finally {
+      setState(() => _isLoadingLocation = false);
+    }
+  }
+
+  Future<void> _selectLocationOnMap() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LocationPickerScreen(
+          initialLocation: _selectedLocation,
+        ),
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        _selectedLocation = result['location'] as LatLng;
+        _address = result['address'] as String;
+        _addressController.text = _address!;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: widget.lead == null ? 'Create New Lead' : 'Edit Lead'),
+      appBar: CustomAppBar(
+          title: widget.lead == null ? 'Create New Lead' : 'Edit Lead'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -97,12 +150,19 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
                 label: 'Address',
                 icon: Icons.location_on,
               ),
-
               const SizedBox(height: 16),
               _buildSectionTitle('Lead Details'),
               _buildDropdown(
                 label: 'Stage',
-                items: const ['New', 'Contacted', 'Qualified', 'Proposal', 'Negotiation', 'Closed Won', 'Closed Lost'],
+                items: const [
+                  'New',
+                  'Contacted',
+                  'Qualified',
+                  'Proposal',
+                  'Negotiation',
+                  'Closed Won',
+                  'Closed Lost'
+                ],
                 value: _stage,
                 onChanged: (value) => setState(() => _stage = value),
               ),
@@ -142,7 +202,6 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
                   );
                 }),
               ),
-
               const SizedBox(height: 16),
               _buildSectionTitle('Dates'),
               _buildDateField(
@@ -156,7 +215,34 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
                 onDateSelected: (date) => setState(() => _followUpDate = date),
                 isOptional: true,
               ),
-
+              const SizedBox(height: 16),
+              _buildSectionTitle('Location'),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _addressController,
+                      decoration: InputDecoration(
+                        labelText: 'Address',
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.location_on),
+                          onPressed:
+                              _isLoadingLocation ? null : _getCurrentLocation,
+                        ),
+                      ),
+                      readOnly: true,
+                      onTap: _selectLocationOnMap,
+                    ),
+                  ),
+                ],
+              ),
+              if (_isLoadingLocation)
+                const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
               const SizedBox(height: 16),
               _buildSectionTitle('Additional Information'),
               _buildTextField(
@@ -171,7 +257,6 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
                 onChanged: (value) =>
                     setState(() => _leadScore = value.toInt()),
               ),
-
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
@@ -202,7 +287,7 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Text(
         title,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,
           color: AppColor.secondaryColor,
@@ -229,7 +314,7 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
           prefixIcon: Icon(icon, color: AppColor.secondaryColor),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: AppColor.secondaryColor),
+            borderSide: const BorderSide(color: AppColor.secondaryColor),
             borderRadius: BorderRadius.circular(8),
           ),
         ),
@@ -239,7 +324,7 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
             return '$label is required';
           }
           if (label == 'Email' && value != null && value.trim().isNotEmpty) {
-            final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+            final emailRegex = RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$');
             if (!emailRegex.hasMatch(value.trim())) {
               return 'Enter a valid email address';
             }
@@ -270,11 +355,11 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
           labelText: label,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: AppColor.secondaryColor),
+            borderSide: const BorderSide(color: AppColor.secondaryColor),
             borderRadius: BorderRadius.circular(8),
           ),
         ),
-        icon: Icon(Icons.arrow_drop_down, color: AppColor.secondaryColor),
+        icon: const Icon(Icons.arrow_drop_down, color: AppColor.secondaryColor),
         items: items.map((item) {
           return DropdownMenuItem(value: item, child: Text(item));
         }).toList(),
@@ -306,7 +391,7 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
             labelText: label,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
             focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: AppColor.secondaryColor),
+              borderSide: const BorderSide(color: AppColor.secondaryColor),
               borderRadius: BorderRadius.circular(8),
             ),
           ),
@@ -319,7 +404,7 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
                   color: date != null ? Colors.black : Colors.grey,
                 ),
               ),
-              Icon(Icons.calendar_today, color: AppColor.secondaryColor),
+              const Icon(Icons.calendar_today, color: AppColor.secondaryColor),
             ],
           ),
         ),
@@ -337,16 +422,55 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
       children: [
         Text(
           '$label: $value',
-          style: TextStyle(color: AppColor.secondaryColor),
+          style: const TextStyle(color: AppColor.secondaryColor),
         ),
-        Slider(
-          value: value.toDouble(),
-          min: 0,
-          max: 100,
-          divisions: 100,
-          label: value.toString(),
-          onChanged: onChanged,
-          activeColor: AppColor.secondaryColor,
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                onTapDown: (details) {
+                  final RenderBox box = context.findRenderObject() as RenderBox;
+                  final double width = box.size.width;
+                  final double dx = details.localPosition.dx;
+                  final double newValue = (dx / width) * 100;
+                  onChanged(newValue.clamp(0.0, 100.0));
+                },
+                child: Container(
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                  child: Stack(
+                    children: [
+                      Container(
+                        width:
+                            (value / 100) * MediaQuery.of(context).size.width,
+                        decoration: BoxDecoration(
+                          color: AppColor.secondaryColor,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      Positioned(
+                        left:
+                            (value / 100) * MediaQuery.of(context).size.width -
+                                8,
+                        child: Container(
+                          width: 16,
+                          height: 16,
+                          decoration: const BoxDecoration(
+                            color: AppColor.secondaryColor,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -374,6 +498,8 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
         activities: _activities,
         notesList: _notesList,
         callLogs: _callLogs,
+        latitude: _selectedLocation?.latitude,
+        longitude: _selectedLocation?.longitude,
       );
       Navigator.pop(context, newLead);
     }
@@ -381,5 +507,99 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
 
   String _formatDate(DateTime date) {
     return '${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}';
+  }
+}
+
+class LocationPickerScreen extends StatefulWidget {
+  final LatLng? initialLocation;
+
+  const LocationPickerScreen({Key? key, this.initialLocation})
+      : super(key: key);
+
+  @override
+  State<LocationPickerScreen> createState() => _LocationPickerScreenState();
+}
+
+class _LocationPickerScreenState extends State<LocationPickerScreen> {
+  late GoogleMapController _mapController;
+  LatLng? _selectedLocation;
+  String? _address;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedLocation = widget.initialLocation;
+  }
+
+  Future<void> _getAddressFromLocation(LatLng location) async {
+    try {
+      final placemarks = await placemarkFromCoordinates(
+        location.latitude,
+        location.longitude,
+      );
+      if (placemarks.isNotEmpty) {
+        final place = placemarks.first;
+        setState(() {
+          _address = '${place.street}, ${place.locality}, ${place.country}';
+        });
+      }
+    } catch (e) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Select Location'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.check),
+            onPressed: _selectedLocation != null
+                ? () => Navigator.pop(context, {
+                      'location': _selectedLocation,
+                      'address': _address,
+                    })
+                : null,
+          ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          GoogleMap(
+            onMapCreated: (controller) => _mapController = controller,
+            initialCameraPosition: CameraPosition(
+              target: _selectedLocation ?? const LatLng(-26.2041, 28.0473),
+              zoom: 15,
+            ),
+            onTap: (LatLng location) {
+              setState(() {
+                _selectedLocation = location;
+              });
+              _getAddressFromLocation(location);
+            },
+            markers: _selectedLocation != null
+                ? {
+                    Marker(
+                      markerId: const MarkerId('selected_location'),
+                      position: _selectedLocation!,
+                    ),
+                  }
+                : {},
+          ),
+          if (_address != null)
+            Positioned(
+              bottom: 16,
+              left: 16,
+              right: 16,
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(_address!),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }

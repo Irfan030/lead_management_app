@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class AppData {
   static String appName = "Leads";
 
-  static final profile = "assets/images/user.jpg";
+  static const profile = "assets/images/user.jpg";
 
   static String openSansRegular = "OpenSansRegular";
   static String openSansMedium = "OpenSansMedium";

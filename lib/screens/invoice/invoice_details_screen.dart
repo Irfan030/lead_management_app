@@ -9,7 +9,7 @@ class InvoiceDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: 'Invoice Detail'),
+      appBar: const CustomAppBar(title: 'Invoice Detail'),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -19,7 +19,9 @@ class InvoiceDetailScreen extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+              boxShadow: const [
+                BoxShadow(color: Colors.black12, blurRadius: 4)
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,16 +74,18 @@ class InvoiceDetailScreen extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+              boxShadow: const [
+                BoxShadow(color: Colors.black12, blurRadius: 4)
+              ],
             ),
-            child: Column(
+            child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   "Product Details",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
-                const Divider(height: 20),
+                Divider(height: 20),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -89,7 +93,7 @@ class InvoiceDetailScreen extends StatelessWidget {
                       flex: 3,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text(
                             "Training",
                             style: TextStyle(
@@ -107,7 +111,7 @@ class InvoiceDetailScreen extends StatelessWidget {
                       flex: 2,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
-                        children: const [
+                        children: [
                           Text(
                             "₹ 50,000.00",
                             style: TextStyle(fontWeight: FontWeight.bold),
@@ -130,7 +134,9 @@ class InvoiceDetailScreen extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+              boxShadow: const [
+                BoxShadow(color: Colors.black12, blurRadius: 4)
+              ],
             ),
             child: Column(
               children: [

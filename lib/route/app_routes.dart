@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:leads_management_app/route/routePath.dart';
+import 'package:leads_management_app/screens/attendance/attendance_screen.dart';
 import 'package:leads_management_app/screens/dashboard.dart';
 import 'package:leads_management_app/screens/invoice/invoices_screen.dart';
 import 'package:leads_management_app/screens/lead/lead_screen.dart';
@@ -17,15 +18,26 @@ class AppRoute {
         return MaterialPageRoute(builder: (_) => const LeadListScreen());
 
       case RoutePath.quotation:
-        return MaterialPageRoute(builder: (_) => QuotationOrderScreen());
+        return MaterialPageRoute(builder: (_) => const QuotationOrderScreen());
       case RoutePath.invoices:
-        return MaterialPageRoute(builder: (_) => InvoicesScreen());
+        return MaterialPageRoute(builder: (_) => const InvoicesScreen());
 
       case RoutePath.reports:
-        return MaterialPageRoute(builder: (_) => ReportsScreen());
+        return MaterialPageRoute(builder: (_) => const ReportsScreen());
+
+      case RoutePath.attendance:
+        return MaterialPageRoute(
+          builder: (_) => const AttendanceScreen(),
+        );
 
       default:
-        return MaterialPageRoute(builder: (_) => const DashboardScreen());
+        return MaterialPageRoute(
+          builder: (_) => Scaffold(
+            body: Center(
+              child: Text('No route defined for ${settings.name}'),
+            ),
+          ),
+        );
     }
   }
 }

@@ -197,7 +197,7 @@ class _LeadListScreenState extends State<LeadListScreen> {
     showModalBottomSheet(
       backgroundColor: AppColor.cardBackground,
       context: context,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
@@ -238,7 +238,6 @@ class _LeadListScreenState extends State<LeadListScreen> {
                     title: Text(stage),
                     trailing: Radio<String>(
                       activeColor: AppColor.secondaryColor,
-
                       value: stage,
                       groupValue: selectedStageFilter,
                       onChanged: (value) {
@@ -324,7 +323,9 @@ class _LeadListScreenState extends State<LeadListScreen> {
           if (a.date == null && b.date == null) return 0;
           if (a.date == null) return 1;
           if (b.date == null) return -1;
-          return sortAscending ? a.date!.compareTo(b.date!) : b.date!.compareTo(a.date!);
+          return sortAscending
+              ? a.date!.compareTo(b.date!)
+              : b.date!.compareTo(a.date!);
         },
       );
     }
@@ -373,7 +374,6 @@ class _LeadListScreenState extends State<LeadListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColor.scaffoldBackground,
-
       body: Column(
         children: [
           Container(
@@ -405,7 +405,6 @@ class _LeadListScreenState extends State<LeadListScreen> {
                   icon: const Icon(Icons.filter_list_alt),
                   onPressed: showStageFilterBottomSheet,
                 ),
-
                 IconButton(
                   icon: Icon(
                     sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
@@ -524,10 +523,11 @@ class _LeadListScreenState extends State<LeadListScreen> {
                                             ),
                                             onPressed: () {},
                                           ),
-
                                           const Spacer(),
                                           Text(
-                                            lead.date != null ? _formatDate(lead.date!) : 'N/A',
+                                            lead.date != null
+                                                ? _formatDate(lead.date!)
+                                                : 'N/A',
                                             style: TextStyle(
                                               color: Colors.grey[600],
                                               fontSize: 12,

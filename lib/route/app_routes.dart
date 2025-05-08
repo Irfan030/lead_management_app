@@ -6,6 +6,7 @@ import 'package:leads_management_app/screens/invoice/invoices_screen.dart';
 import 'package:leads_management_app/screens/lead/lead_screen.dart';
 import 'package:leads_management_app/screens/quotation/quotation_order_screen.dart';
 import 'package:leads_management_app/screens/report/reports_screen.dart';
+import 'package:leads_management_app/screens/attendance/attendance_screen.dart';
 
 class AppRoute {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -24,6 +25,11 @@ class AppRoute {
 
       case RoutePath.reports:
         return MaterialPageRoute(builder: (_) => const ReportsScreen());
+
+      case RoutePath.attendance:
+        return MaterialPageRoute(
+          builder: (_) => const AttendanceScreen(),
+        );
 
       case RoutePath.attendance:
         return MaterialPageRoute(

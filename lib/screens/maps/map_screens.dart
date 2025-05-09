@@ -33,7 +33,7 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
   static const LatLng _center = LatLng(-26.2041, 28.0473); // Johannesburg
-  late GoogleMapController _mapController;
+  GoogleMapController? _mapController;
   final Set<Marker> _markers = {};
   final Set<Polyline> _polylines = {};
   final Set<Circle> _geofences = {};
@@ -56,40 +56,95 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
   ];
   bool _showOnlyNearbyLeads = false;
   double _nearbyRadius = 5.0; // in kilometers
+  bool _isDisposed = false;
+  StreamSubscription<Position>? _positionStream;
+  bool _isInBackground = false;
+  bool _initialCameraPositionSet = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _loadDummyLeads();
-    _loadTeamMembers();
-    _getCurrentLocation();
+    _initializeMap();
   }
 
   @override
   void dispose() {
+    _isDisposed = true;
     WidgetsBinding.instance.removeObserver(this);
+    _cleanupResources();
     super.dispose();
+  }
+
+  void _cleanupResources() {
+    _positionStream?.cancel();
+    _positionStream = null;
+    _mapController?.dispose();
+    _mapController = null;
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      // App came back to foreground
-      setState(() {
-        _isNavigating = false;
-      });
-      _getCurrentLocation(); // Refresh location when app resumes
-    } else if (state == AppLifecycleState.paused) {
-      // App went to background
-      setState(() {
-        _isNavigating = true;
-      });
+    if (_isDisposed) return;
+
+    switch (state) {
+      case AppLifecycleState.resumed:
+        if (!_isDisposed) {
+          setState(() {
+            _isInBackground = false;
+            _isNavigating = false;
+          });
+          _getCurrentLocation();
+        }
+        break;
+      case AppLifecycleState.paused:
+      case AppLifecycleState.inactive:
+        if (!_isDisposed) {
+          setState(() {
+            _isInBackground = true;
+            _isNavigating = false;
+          });
+          _cleanupResources();
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
+  Future<void> _initializeMap() async {
+    if (_isDisposed) return;
+
+    try {
+      await Future.wait([
+        _loadDummyLeads(),
+        _loadTeamMembers(),
+        _getCurrentLocation(),
+      ]);
+
+      if (mounted && !_isDisposed) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted && !_isDisposed) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error initializing map: $e')),
+        );
+      }
     }
   }
 
   Future<void> _loadTeamMembers() async {
-    // TODO: Load team members from your data source
+    // Simulated team member loading
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    if (_isDisposed) return;
+
     setState(() {
       _teamMembers = [
         TeamMember(
@@ -98,73 +153,70 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
           location: const LatLng(-26.2041, 28.0473),
           lastUpdated: DateTime.now(),
         ),
-        // Add more team members
       ];
-      _updateMarkers();
     });
+    _updateMarkers();
   }
 
   void _updateMarkers() {
-    setState(() {
-      _markers.clear();
-      if (_showLeads) {
-        _addLeadMarkers();
-      }
-      if (_showTeam) {
-        _addTeamMarkers();
-      }
-      if (_currentPosition != null) {
-        _addCurrentLocationMarker();
-      }
-    });
-  }
+    if (_isDisposed) return;
 
-  void _addLeadMarkers() {
-    for (var lead in _leads) {
-      if (_selectedLeadStage == 'All' || lead.stage == _selectedLeadStage) {
-        if (!_showOnlyNearbyLeads || _isLeadNearby(lead)) {
-          _markers.add(
-            Marker(
-              markerId: MarkerId('lead_${lead.id}'),
-              position: LatLng(lead.latitude ?? 0, lead.longitude ?? 0),
-              icon: BitmapDescriptor.defaultMarkerWithHue(
-                _getMarkerHueForStage(lead.stage ?? ''),
+    final markers = <Marker>{};
+
+    if (_showLeads) {
+      for (var lead in _leads) {
+        if (_selectedLeadStage == 'All' || lead.stage == _selectedLeadStage) {
+          if (!_showOnlyNearbyLeads || _isLeadNearby(lead)) {
+            markers.add(
+              Marker(
+                markerId: MarkerId('lead_${lead.id}'),
+                position: LatLng(lead.latitude ?? 0, lead.longitude ?? 0),
+                icon: BitmapDescriptor.defaultMarkerWithHue(
+                  _getMarkerHueForStage(lead.stage ?? ''),
+                ),
+                onTap: () => _showLeadDetails(lead),
               ),
-              onTap: () => _showLeadDetails(lead),
-            ),
-          );
+            );
+          }
         }
       }
     }
-  }
 
-  void _addTeamMarkers() {
-    for (var member in _teamMembers) {
-      _markers.add(
-        Marker(
-          markerId: MarkerId('team_${member.id}'),
-          position: member.location,
-          icon:
-              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-          infoWindow: InfoWindow(
-            title: member.name,
-            snippet: 'Last updated: ${_formatTime(member.lastUpdated)}',
+    if (_showTeam) {
+      for (var member in _teamMembers) {
+        markers.add(
+          Marker(
+            markerId: MarkerId('team_${member.id}'),
+            position: member.location,
+            icon: BitmapDescriptor.defaultMarkerWithHue(
+                BitmapDescriptor.hueGreen),
+            infoWindow: InfoWindow(
+              title: member.name,
+              snippet: 'Last updated: ${_formatTime(member.lastUpdated)}',
+            ),
           ),
+        );
+      }
+    }
+
+    if (_currentPosition != null) {
+      markers.add(
+        Marker(
+          markerId: const MarkerId('current_location'),
+          position:
+              LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+          infoWindow: const InfoWindow(title: 'Current Location'),
         ),
       );
     }
-  }
 
-  void _addCurrentLocationMarker() {
-    _markers.add(
-      Marker(
-        markerId: const MarkerId('current_location'),
-        position:
-            LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-        infoWindow: const InfoWindow(title: 'Current Location'),
-      ),
-    );
+    if (_isDisposed) return;
+
+    setState(() {
+      _markers.clear();
+      _markers.addAll(markers);
+    });
   }
 
   bool _isLeadNearby(Lead lead) {
@@ -175,7 +227,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
       lead.latitude ?? 0,
       lead.longitude ?? 0,
     );
-    return distance <= _nearbyRadius * 1000; // Convert km to meters
+    return distance <= _nearbyRadius * 1000;
   }
 
   String _formatTime(DateTime time) {
@@ -183,7 +235,11 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _loadDummyLeads() async {
-    // Dummy data for leads
+    // Simulated lead loading
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    if (_isDisposed) return;
+
     setState(() {
       _leads = [
         Lead(
@@ -317,27 +373,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
           callLogs: [],
         ),
       ];
-      _updateMarkers();
     });
-  }
-
-  Color _getMarkerColorForStage(String stage) {
-    switch (stage.toLowerCase()) {
-      case 'new':
-        return Colors.blue;
-      case 'contacted':
-        return Colors.orange;
-      case 'qualified':
-        return Colors.green;
-      case 'proposal':
-        return Colors.purple;
-      case 'negotiation':
-        return Colors.amber;
-      case 'closed':
-        return Colors.grey;
-      default:
-        return Colors.blue;
-    }
+    _updateMarkers();
   }
 
   double _getMarkerHueForStage(String stage) {
@@ -359,6 +396,25 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
     }
   }
 
+  Color _getMarkerColorForStage(String stage) {
+    switch (stage.toLowerCase()) {
+      case 'new':
+        return Colors.blue;
+      case 'contacted':
+        return Colors.orange;
+      case 'qualified':
+        return Colors.green;
+      case 'proposal':
+        return Colors.purple;
+      case 'negotiation':
+        return Colors.amber;
+      case 'closed':
+        return Colors.grey;
+      default:
+        return Colors.blue;
+    }
+  }
+
   void _showLeadDetails(Lead lead) {
     showModalBottomSheet(
       context: context,
@@ -372,7 +428,6 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
         ),
         child: Column(
           children: [
-            // Handle bar
             Container(
               margin: const EdgeInsets.only(top: 8),
               width: 40,
@@ -388,7 +443,6 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Company Header
                     Row(
                       children: [
                         CircleAvatar(
@@ -429,8 +483,6 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
                       ],
                     ),
                     const SizedBox(height: 24),
-
-                    // Stage and Contact Info
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -498,8 +550,6 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
                       ),
                     ),
                     const SizedBox(height: 24),
-
-                    // Quick Actions
                     const Text(
                       'Quick Actions',
                       style: TextStyle(
@@ -512,9 +562,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
                       children: [
                         Expanded(
                           child: ElevatedButton.icon(
-                            onPressed: () {
-                              // TODO: Implement call functionality
-                            },
+                            onPressed: () {},
                             icon: const Icon(Icons.phone),
                             label: const Text('Call'),
                             style: ElevatedButton.styleFrom(
@@ -525,9 +573,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
                         const SizedBox(width: 12),
                         Expanded(
                           child: ElevatedButton.icon(
-                            onPressed: () {
-                              // TODO: Implement email functionality
-                            },
+                            onPressed: () {},
                             icon: const Icon(Icons.email),
                             label: const Text('Email'),
                             style: ElevatedButton.styleFrom(
@@ -605,303 +651,334 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        return Future.error('Location services are disabled.');
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+        return;
       }
 
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          return Future.error('Location permissions are denied');
+          if (mounted) {
+            setState(() => _isLoading = false);
+          }
+          return;
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
-        return Future.error(
-            'Location permissions are permanently denied, we cannot request permissions.');
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+        return;
       }
 
       Position position = await Geolocator.getCurrentPosition();
+
+      if (_isDisposed) return;
+
       setState(() {
         _currentPosition = position;
         _isLoading = false;
-        _updateMarkers();
       });
+
+      _updateMarkers();
+
+      // Move camera to current position if not already set
+      if (!_initialCameraPositionSet && _mapController != null) {
+        _mapController!.animateCamera(
+          CameraUpdate.newLatLng(
+            LatLng(position.latitude, position.longitude),
+          ),
+        );
+        _initialCameraPositionSet = true;
+      }
     } catch (e) {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error getting location: ${e.toString()}')),
-      );
+      if (mounted && !_isDisposed) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error getting location: $e')),
+        );
+      }
     }
   }
 
   void _toggleLeads() {
     setState(() {
       _showLeads = !_showLeads;
-      _updateMarkers();
     });
+    _updateMarkers();
   }
 
   void _toggleTeam() {
     setState(() {
       _showTeam = !_showTeam;
-      _updateMarkers();
     });
+    _updateMarkers();
   }
 
   void _onMapCreated(GoogleMapController controller) {
+    if (_isDisposed) {
+      controller.dispose();
+      return;
+    }
+
     _mapController = controller;
-    _updateMarkers();
+
+    // Move camera to current position if available
+    if (_currentPosition != null && !_initialCameraPositionSet) {
+      controller.animateCamera(
+        CameraUpdate.newLatLng(
+          LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+        ),
+      );
+      _initialCameraPositionSet = true;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        if (_isNavigating) {
-          setState(() {
-            _isNavigating = false;
-          });
-          return false;
-        }
-        return true;
-      },
-      child: Scaffold(
-        backgroundColor: AppColor.scaffoldBackground,
-        appBar: AppBar(
-          backgroundColor: AppColor.mainColor,
-          title: const Text(
-            'Lead Map',
-            style: TextStyle(
-              color: AppColor.cardBackground,
-            ),
+    return Scaffold(
+      backgroundColor: AppColor.scaffoldBackground,
+      appBar: AppBar(
+        backgroundColor: AppColor.mainColor,
+        title: const Text(
+          'Lead Map',
+          style: TextStyle(
+            color: AppColor.cardBackground,
           ),
-          actions: [
-            IconButton(
-              icon: Icon(
-                _showLeads ? Icons.people : Icons.people_outline,
-                color: AppColor.cardBackground,
-              ),
-              onPressed: _toggleLeads,
-              tooltip: 'Toggle Leads',
-            ),
-            IconButton(
-              icon: Icon(
-                _showTeam ? Icons.group : Icons.group_outlined,
-                color: AppColor.cardBackground,
-              ),
-              onPressed: _toggleTeam,
-              tooltip: 'Toggle Team',
-            ),
-            PopupMenuButton<String>(
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              _showLeads ? Icons.people : Icons.people_outline,
               color: AppColor.cardBackground,
-              icon: const Icon(
-                Icons.filter_list,
-                color: AppColor.cardBackground,
-              ),
-              onSelected: (String stage) {
-                setState(() {
-                  _selectedLeadStage = stage;
-                  _updateMarkers();
-                });
-              },
-              itemBuilder: (BuildContext context) =>
-                  _leadStages.map((String stage) {
-                return PopupMenuItem<String>(
-                  value: stage,
-                  child: Row(
-                    children: [
-                      if (stage != 'All')
-                        Container(
-                          width: 16,
-                          height: 16,
-                          margin: const EdgeInsets.only(right: 12),
-                          decoration: BoxDecoration(
-                            color: _getMarkerColorForStage(stage),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.grey.shade300,
-                              width: 1,
-                            ),
+            ),
+            onPressed: _toggleLeads,
+            tooltip: 'Toggle Leads',
+          ),
+          IconButton(
+            icon: Icon(
+              _showTeam ? Icons.group : Icons.group_outlined,
+              color: AppColor.cardBackground,
+            ),
+            onPressed: _toggleTeam,
+            tooltip: 'Toggle Team',
+          ),
+          PopupMenuButton<String>(
+            color: AppColor.cardBackground,
+            icon: const Icon(
+              Icons.filter_list,
+              color: AppColor.cardBackground,
+            ),
+            onSelected: (String stage) {
+              setState(() {
+                _selectedLeadStage = stage;
+              });
+              _updateMarkers();
+            },
+            itemBuilder: (BuildContext context) =>
+                _leadStages.map((String stage) {
+              return PopupMenuItem<String>(
+                value: stage,
+                child: Row(
+                  children: [
+                    if (stage != 'All')
+                      Container(
+                        width: 16,
+                        height: 16,
+                        margin: const EdgeInsets.only(right: 12),
+                        decoration: BoxDecoration(
+                          color: _getMarkerColorForStage(stage),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.grey.shade300,
+                            width: 1,
                           ),
                         ),
-                      Text(stage),
-                    ],
-                  ),
-                );
-              }).toList(),
-            ),
-            IconButton(
-              icon: Icon(
-                _showOnlyNearbyLeads ? Icons.location_on : Icons.location_off,
-                color: AppColor.cardBackground,
-              ),
-              onPressed: () {
-                setState(() {
-                  _showOnlyNearbyLeads = !_showOnlyNearbyLeads;
-                  _updateMarkers();
-                });
-              },
-              tooltip: 'Toggle Nearby Leads',
-            ),
-          ],
-        ),
-        body: Stack(
-          children: [
-            GoogleMap(
-              onMapCreated: _onMapCreated,
-              initialCameraPosition: CameraPosition(
-                target: _currentPosition != null
-                    ? LatLng(
-                        _currentPosition!.latitude, _currentPosition!.longitude)
-                    : _center,
-                zoom: 12,
-              ),
-              markers: _markers,
-              polylines: _polylines,
-              circles: _geofences,
-              myLocationEnabled: true,
-              myLocationButtonEnabled: true,
-              mapType: MapType.normal,
-              zoomControlsEnabled: true,
-              zoomGesturesEnabled: true,
-            ),
-            if (_isLoading)
-              const Center(
-                child: CircularProgressIndicator(),
-              ),
-            if (_isNavigating)
-              Container(
-                color: Colors.black.withOpacity(0.5),
-                child: const Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircularProgressIndicator(),
-                      SizedBox(height: 16),
-                      Text(
-                        'Navigation in progress...',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
                       ),
-                      SizedBox(height: 8),
-                      Text(
-                        'Return to this app when done',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                        ),
+                    Text(stage),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+          IconButton(
+            icon: Icon(
+              _showOnlyNearbyLeads ? Icons.location_on : Icons.location_off,
+              color: AppColor.cardBackground,
+            ),
+            onPressed: () {
+              setState(() {
+                _showOnlyNearbyLeads = !_showOnlyNearbyLeads;
+              });
+              _updateMarkers();
+            },
+            tooltip: 'Toggle Nearby Leads',
+          ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          GoogleMap(
+            onMapCreated: _onMapCreated,
+            initialCameraPosition: CameraPosition(
+              target: _currentPosition != null
+                  ? LatLng(
+                      _currentPosition!.latitude, _currentPosition!.longitude)
+                  : _center,
+              zoom: 12,
+            ),
+            markers: _markers,
+            polylines: _polylines,
+            circles: _geofences,
+            myLocationEnabled: true,
+            myLocationButtonEnabled: true,
+            mapType: MapType.normal,
+            zoomControlsEnabled: false,
+            zoomGesturesEnabled: true,
+          ),
+          if (_isLoading)
+            const Center(
+              child: CircularProgressIndicator(
+                color: AppColor.mainColor,
+              ),
+            ),
+          if (_isNavigating)
+            Container(
+              color: Colors.black.withOpacity(0.5),
+              child: const Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(
+                      color: AppColor.mainColor,
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Navigation in progress...',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
-                    ],
-                  ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Return to this app when done',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            if (_showOnlyNearbyLeads)
-              Positioned(
-                top: 16,
-                left: 16,
-                right: 16,
-                child: Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
+            ),
+          if (_showOnlyNearbyLeads)
+            Positioned(
+              top: 16,
+              left: 16,
+              right: 16,
+              child: Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColor.cardBackground,
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColor.cardBackground,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Row(
-                          children: [
-                            Icon(
-                              Icons.location_on,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(
+                            Icons.location_on,
+                            color: AppColor.mainColor,
+                            size: 24,
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            'Nearby Leads',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
                               color: AppColor.mainColor,
-                              size: 24,
                             ),
-                            SizedBox(width: 8),
-                            Text(
-                              'Nearby Leads',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: AppColor.mainColor,
-                              ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '${_nearbyRadius.round()} km',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              '${_nearbyRadius.round()} km',
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColor.mainColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              '${_markers.where((m) => m.markerId.value.startsWith('lead_')).length} leads',
                               style: const TextStyle(
-                                fontSize: 16,
+                                color: AppColor.mainColor,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColor.mainColor.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                '${_markers.where((m) => m.markerId.value.startsWith('lead_')).length} leads',
-                                style: const TextStyle(
-                                  color: AppColor.mainColor,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        SliderTheme(
-                          data: SliderThemeData(
-                            activeTrackColor: AppColor.mainColor,
-                            inactiveTrackColor:
-                                AppColor.mainColor.withOpacity(0.2),
-                            thumbColor: AppColor.mainColor,
-                            overlayColor: AppColor.mainColor.withOpacity(0.1),
-                            valueIndicatorColor: AppColor.mainColor,
-                            valueIndicatorTextStyle: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                            ),
                           ),
-                          child: Slider(
-                            value: _nearbyRadius,
-                            min: 1,
-                            max: 20,
-                            divisions: 19,
-                            label: '${_nearbyRadius.round()} km',
-                            onChanged: (value) {
-                              setState(() {
-                                _nearbyRadius = value;
-                                _updateMarkers();
-                              });
-                            },
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      SliderTheme(
+                        data: SliderThemeData(
+                          activeTrackColor: AppColor.mainColor,
+                          inactiveTrackColor:
+                              AppColor.mainColor.withOpacity(0.2),
+                          thumbColor: AppColor.mainColor,
+                          overlayColor: AppColor.mainColor.withOpacity(0.1),
+                          valueIndicatorColor: AppColor.mainColor,
+                          valueIndicatorTextStyle: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
                           ),
                         ),
-                      ],
-                    ),
+                        child: Slider(
+                          value: _nearbyRadius,
+                          min: 1,
+                          max: 20,
+                          divisions: 19,
+                          label: '${_nearbyRadius.round()} km',
+                          onChanged: (value) {
+                            setState(() {
+                              _nearbyRadius = value;
+                            });
+                            _updateMarkers();
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }

@@ -42,7 +42,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 5),
+                              horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
                             color: AppColor.cardBackground,
                             borderRadius: BorderRadius.circular(8),
@@ -59,7 +59,13 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                 items: provider.filters.map((String value) {
                                   return DropdownMenuItem<String>(
                                     value: value,
-                                    child: Text(value),
+                                    child: Text(
+                                      value,
+                                      style: TextStyle(
+                                        fontSize:
+                                            getProportionateScreenWidth(14),
+                                      ),
+                                    ),
                                   );
                                 }).toList(),
                                 onChanged: (String? value) {
@@ -82,19 +88,30 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                               ),
                             );
                           },
-                          icon: const Icon(Icons.history),
-                          label: const Text('History'),
+                          icon: Icon(
+                            Icons.history,
+                            size: getProportionateScreenWidth(18),
+                          ),
+                          label: Text(
+                            'History',
+                            style: TextStyle(
+                              fontSize: getProportionateScreenWidth(14),
+                            ),
+                          ),
                           style: TextButton.styleFrom(
                             foregroundColor: AppColor.mainColor,
                           ),
                         ),
                       ],
                     ),
-                    SizedBox(height: getProportionateScreenHeight(12)),
+                    SizedBox(height: getProportionateScreenHeight(16)),
                     // Statistics Card
                     Card(
                       color: AppColor.cardBackground,
                       elevation: 1,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Column(
@@ -103,19 +120,19 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text(
+                                Text(
                                   'Monthly Overview',
                                   style: TextStyle(
-                                    fontSize: 20,
+                                    fontSize: getProportionateScreenWidth(18),
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 Text(
                                   DateFormat('MMMM yyyy')
                                       .format(DateTime.now()),
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: Colors.grey,
-                                    fontSize: 16,
+                                    fontSize: getProportionateScreenWidth(14),
                                   ),
                                 ),
                               ],
@@ -157,45 +174,56 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(height: getProportionateScreenHeight(12)),
+                    SizedBox(height: getProportionateScreenHeight(16)),
                     // Status Card
-                    Card(
-                      color: AppColor.cardBackground,
-                      elevation: 1,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          children: [
-                            if (provider.isLocationLoading)
-                              const CircularProgressIndicator()
-                            else
-                              Icon(
-                                provider.isCheckedIn
-                                    ? Icons.login
-                                    : Icons.logout,
-                                size: 48,
-                                color: provider.isCheckedIn
-                                    ? AppColor.successColor
-                                    : AppColor.errorColor,
-                              ),
-                            const SizedBox(height: 16),
-                            Text(
-                              provider.statusMessage,
-                              style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 8),
-                            if (provider.currentPosition != null)
+                    Center(
+                      child: Card(
+                        color: AppColor.cardBackground,
+                        elevation: 1,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            children: [
+                              if (provider.isLocationLoading)
+                                const CircularProgressIndicator(
+                                  color: AppColor.mainColor,
+                                )
+                              else
+                                Icon(
+                                  provider.isCheckedIn
+                                      ? Icons.login
+                                      : Icons.logout,
+                                  size: 48,
+                                  color: provider.isCheckedIn
+                                      ? AppColor.successColor
+                                      : AppColor.errorColor,
+                                ),
+                              SizedBox(
+                                  height: getProportionateScreenHeight(16)),
                               Text(
-                                'Location: ${provider.currentPosition!.latitude.toStringAsFixed(4)}, '
-                                '${provider.currentPosition!.longitude.toStringAsFixed(4)}',
-                                style: const TextStyle(color: Colors.grey),
+                                provider.statusMessage,
+                                style: TextStyle(
+                                  fontSize: getProportionateScreenWidth(18),
+                                  fontWeight: FontWeight.bold,
+                                ),
                                 textAlign: TextAlign.center,
                               ),
-                          ],
+                              SizedBox(height: getProportionateScreenHeight(8)),
+                              if (provider.currentPosition != null)
+                                Text(
+                                  'Location: ${provider.currentPosition!.latitude.toStringAsFixed(4)}, '
+                                  '${provider.currentPosition!.longitude.toStringAsFixed(4)}',
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: getProportionateScreenWidth(12),
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -203,7 +231,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     // Check In/Out Button
                     SizedBox(
                       width: double.infinity,
-                      height: 56,
+                      height: getProportionateScreenHeight(56),
                       child: ElevatedButton(
                         onPressed:
                             (provider.isLoading || provider.isLocationLoading)
@@ -214,38 +242,40 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                               ? AppColor.errorColor
                               : AppColor.successColor,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                         child: provider.isLoading
                             ? const CircularProgressIndicator(
                                 color: Colors.white)
                             : Text(
-                                provider.isCheckedIn ? 'Check Out' : 'Check In',
-                                style: const TextStyle(
-                                  fontSize: 18,
+                                provider.isCheckedIn ? 'CHECK OUT' : 'CHECK IN',
+                                style: TextStyle(
+                                  fontSize: getProportionateScreenWidth(16),
                                   color: Colors.white,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                       ),
                     ),
-                    SizedBox(height: getProportionateScreenHeight(12)),
+                    SizedBox(height: getProportionateScreenHeight(16)),
                     // Recent History
                     if (provider.filteredHistory.isNotEmpty) ...[
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
+                          Text(
                             'Recent History',
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: getProportionateScreenWidth(16),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           Text(
                             'Filter: ${provider.selectedFilter}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.grey,
+                              fontSize: getProportionateScreenWidth(12),
                             ),
                           ),
                         ],
@@ -260,7 +290,14 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           return Card(
                             color: AppColor.cardBackground,
                             margin: const EdgeInsets.only(bottom: 8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                             child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
                               leading: CircleAvatar(
                                 backgroundColor: record.type == 'Check In'
                                     ? AppColor.successColor.withOpacity(0.1)
@@ -274,18 +311,30 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                       : AppColor.errorColor,
                                 ),
                               ),
-                              title: Text(record.type),
+                              title: Text(
+                                record.type,
+                                style: TextStyle(
+                                  fontSize: getProportionateScreenWidth(14),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     DateFormat('MMM dd, yyyy HH:mm')
                                         .format(record.timestamp),
+                                    style: TextStyle(
+                                      fontSize: getProportionateScreenWidth(12),
+                                    ),
                                   ),
                                   if (record.officeLocation != null)
                                     Text(
                                       'Office: ${record.officeLocation}',
-                                      style: const TextStyle(fontSize: 12),
+                                      style: TextStyle(
+                                        fontSize:
+                                            getProportionateScreenWidth(11),
+                                      ),
                                     ),
                                 ],
                               ),
@@ -309,7 +358,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                           color: record.lateness! > 0
                                               ? AppColor.errorColor
                                               : AppColor.successColor,
-                                          fontSize: 12,
+                                          fontSize:
+                                              getProportionateScreenWidth(10),
                                         ),
                                       ),
                                     )
@@ -336,19 +386,20 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       width: itemWidth,
       child: Column(
         children: [
-          Icon(icon, color: color, size: 32),
-          const SizedBox(height: 8),
+          Icon(icon, color: color, size: getProportionateScreenWidth(28)),
+          SizedBox(height: getProportionateScreenHeight(8)),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 24,
+            style: TextStyle(
+              fontSize: getProportionateScreenWidth(20),
               fontWeight: FontWeight.bold,
             ),
           ),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.grey,
+              fontSize: getProportionateScreenWidth(12),
             ),
             textAlign: TextAlign.center,
           ),
@@ -372,12 +423,16 @@ class AttendanceHistoryScreen extends StatelessWidget {
       backgroundColor: AppColor.scaffoldBackground,
       appBar: const CustomAppBar(title: 'Attendance History'),
       body: ListView.builder(
+        padding: const EdgeInsets.symmetric(vertical: 16),
         itemCount: history.length,
         itemBuilder: (context, index) {
           final record = history[index];
           return Card(
             color: AppColor.cardBackground,
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -388,8 +443,8 @@ class AttendanceHistoryScreen extends StatelessWidget {
                     children: [
                       Text(
                         record.type,
-                        style: const TextStyle(
-                          fontSize: 18,
+                        style: TextStyle(
+                          fontSize: getProportionateScreenWidth(16),
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -411,24 +466,37 @@ class AttendanceHistoryScreen extends StatelessWidget {
                               color: record.lateness! > 0
                                   ? AppColor.errorColor
                                   : AppColor.successColor,
+                              fontSize: getProportionateScreenWidth(12),
                             ),
                           ),
                         ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: getProportionateScreenHeight(8)),
                   Text(
                     DateFormat('MMM dd, yyyy HH:mm').format(record.timestamp),
-                    style: const TextStyle(color: Colors.grey),
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: getProportionateScreenWidth(14),
+                    ),
                   ),
                   if (record.officeLocation != null) ...[
-                    const SizedBox(height: 8),
-                    Text('Office: ${record.officeLocation}'),
+                    SizedBox(height: getProportionateScreenHeight(8)),
+                    Text(
+                      'Office: ${record.officeLocation}',
+                      style: TextStyle(
+                        fontSize: getProportionateScreenWidth(14),
+                      ),
+                    ),
                   ],
                   if (record.workingHours != null) ...[
-                    const SizedBox(height: 8),
+                    SizedBox(height: getProportionateScreenHeight(8)),
                     Text(
-                        'Working Hours: ${record.workingHours!.toStringAsFixed(1)}'),
+                      'Working Hours: ${record.workingHours!.toStringAsFixed(1)}',
+                      style: TextStyle(
+                        fontSize: getProportionateScreenWidth(14),
+                      ),
+                    ),
                   ],
                 ],
               ),

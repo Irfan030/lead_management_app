@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:leads_management_app/theme/colors.dart';
+import 'package:leads_management_app/theme/sizeConfig.dart';
 
 class DefaultButton extends StatelessWidget {
   final String text;
@@ -23,12 +24,13 @@ class DefaultButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //outlined button
     return InkWell(
       onTap: () {
         if (!loading!) press();
       },
       child: Container(
-        // height: getProportionateScreenHeight(45),
+        height: getProportionateScreenHeight(45),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(borderRadius),
           color: backgroundColor,
@@ -41,7 +43,6 @@ class DefaultButton extends StatelessWidget {
             ),
           ],
         ),
-
         child: Center(
           child: loading!
               ? const CircularProgressIndicator(

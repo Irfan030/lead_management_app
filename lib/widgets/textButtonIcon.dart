@@ -27,7 +27,7 @@ class TextIconButtonWidget extends StatelessWidget {
     this.iconSize = 14,
     this.iconColor = AppColor.textPrimary,
   });
-
+//text button with icon
   @override
   Widget build(BuildContext context) {
     return TextButton(
@@ -47,7 +47,6 @@ class TextIconButtonWidget extends StatelessWidget {
             fontFamily: fontFamily,
             letterSpacing: letterSpacing,
           ),
-
           Icon(icon, size: iconSize, color: iconColor),
         ],
       ),

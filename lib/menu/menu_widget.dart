@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:leads_management_app/constant.dart';
+import 'package:leads_management_app/route/routePath.dart';
 import 'package:leads_management_app/theme/colors.dart';
+import 'package:leads_management_app/widgets/titleWidget.dart';
 
 class MenuWidget extends StatelessWidget {
   final Function(String) onItemClick;
@@ -10,15 +12,18 @@ class MenuWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<_DrawerItem> drawerItems = [
-      _DrawerItem('Dashboard', Icons.dashboard_outlined),
-      _DrawerItem('Leads', Icons.people_alt_outlined),
-      _DrawerItem('Opportunity', Icons.trending_up_outlined),
-      _DrawerItem('Quotation/Order', Icons.description_outlined),
-      _DrawerItem('Invoices', Icons.receipt_long_outlined),
-      _DrawerItem('Activity', Icons.event_note_outlined),
-      _DrawerItem('Reports', Icons.analytics_outlined),
-      _DrawerItem('Attendance', Icons.calendar_today_outlined),
-      _DrawerItem('Map', Icons.location_on_outlined),
+      _DrawerItem('Dashboard', Icons.dashboard_outlined, RoutePath.dashboard),
+      _DrawerItem('Leads', Icons.people_alt_outlined, RoutePath.lead),
+      _DrawerItem(
+          'Opportunity', Icons.trending_up_outlined, RoutePath.opportunity),
+      _DrawerItem(
+          'Quotation/Order', Icons.description_outlined, RoutePath.quotation),
+      _DrawerItem('Invoices', Icons.receipt_long_outlined, RoutePath.invoices),
+      _DrawerItem('Activity', Icons.event_note_outlined, RoutePath.activity),
+      _DrawerItem('Reports', Icons.analytics_outlined, RoutePath.reports),
+      _DrawerItem(
+          'Attendance', Icons.calendar_today_outlined, RoutePath.attendance),
+      _DrawerItem('Map', Icons.location_on_outlined, RoutePath.map),
     ];
 
     return Container(
@@ -38,13 +43,11 @@ class MenuWidget extends StatelessWidget {
                     backgroundImage: AssetImage(AppData.profile),
                   ),
                   SizedBox(height: 10),
-                  Text(
-                    'Mitchell Admin',
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: AppColor.cardBackground,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  TitleWidget(
+                    val: 'Mitchell Admin',
+                    fontSize: 20,
+                    color: AppColor.cardBackground,
+                    fontWeight: FontWeight.bold,
                   ),
                 ],
               ),
@@ -55,7 +58,7 @@ class MenuWidget extends StatelessWidget {
                 itemCount: drawerItems.length,
                 itemBuilder: (context, index) {
                   final item = drawerItems[index];
-                  return _buildMenuItem(item.title, item.icon);
+                  return _buildMenuItem(item.title, item.icon, item.route);
                 },
               ),
             ),
@@ -64,7 +67,7 @@ class MenuWidget extends StatelessWidget {
               child: ElevatedButton.icon(
                 onPressed: () => onItemClick('Logout'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColor.mainColor, // Button background
+                  backgroundColor: AppColor.mainColor,
                   foregroundColor: AppColor.cardBackground,
                   minimumSize: const Size(double.infinity, 50),
                   shape: RoundedRectangleBorder(
@@ -72,9 +75,10 @@ class MenuWidget extends StatelessWidget {
                   ),
                 ),
                 icon: const Icon(Icons.logout, color: Colors.white),
-                label: const Text(
-                  "Logout",
-                  style: TextStyle(color: Colors.white, fontSize: 16),
+                label: const TitleWidget(
+                  val: "Logout",
+                  color: Colors.white,
+                  fontSize: 16,
                 ),
               ),
             ),
@@ -84,7 +88,7 @@ class MenuWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuItem(String title, IconData icon) {
+  Widget _buildMenuItem(String title, IconData icon, String route) {
     return SafeArea(
       child: InkWell(
         onTap: () => onItemClick(title),
@@ -95,12 +99,10 @@ class MenuWidget extends StatelessWidget {
               Icon(icon, size: 24, color: Colors.black87),
               const SizedBox(width: 20),
               Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
+                child: TitleWidget(
+                  val: title,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -114,5 +116,6 @@ class MenuWidget extends StatelessWidget {
 class _DrawerItem {
   final String title;
   final IconData icon;
-  _DrawerItem(this.title, this.icon);
+  final String route;
+  _DrawerItem(this.title, this.icon, this.route);
 }

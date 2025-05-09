@@ -41,8 +41,16 @@ class MyApp extends StatelessWidget {
         title: 'Lead Manager',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          primarySwatch: Colors.blue,
+          primaryColor: AppColor.mainColor,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: AppColor.mainColor,
+            primary: AppColor.mainColor,
+            secondary: AppColor.secondaryColor,
+          ),
           appBarTheme: const AppBarTheme(
+            backgroundColor: AppColor.mainColor,
+            foregroundColor: Colors.white,
+            elevation: 0,
             systemOverlayStyle: SystemUiOverlayStyle(
               statusBarColor: AppColor.mainColor,
               statusBarIconBrightness: Brightness.light,
@@ -52,8 +60,38 @@ class MyApp extends StatelessWidget {
             ),
           ),
           scaffoldBackgroundColor: AppColor.scaffoldBackground,
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColor.mainColor,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+          inputDecorationTheme: InputDecorationTheme(
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: AppColor.mainColor),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: AppColor.errorColor),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          ),
         ),
-        initialRoute: RoutePath.dashboard,
+        initialRoute: RoutePath.splash,
         onGenerateRoute: AppRoute.generateRoute,
       ),
     );

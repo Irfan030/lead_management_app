@@ -40,7 +40,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
         title: Text(
           'LEAD DETAILS',
           style: TextStyle(
-            color: AppColor.cardBackground,
+            color: AppColor.whiteColor,
             fontSize: getProportionateScreenWidth(18),
             fontWeight: FontWeight.w600,
           ),
@@ -48,7 +48,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
         leading: IconButton(
           icon: Icon(
             Icons.arrow_back_ios_new,
-            color: AppColor.cardBackground,
+            color: AppColor.whiteColor,
             size: getProportionateScreenWidth(20),
           ),
           onPressed: Navigator.of(context).pop,
@@ -66,7 +66,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
         bottom: TabBar(
           controller: _tabController,
           labelColor: AppColor.scaffoldBackground,
-          unselectedLabelColor: AppColor.cardBackground.withOpacity(0.7),
+          unselectedLabelColor: AppColor.whiteColor.withOpacity(0.7),
           indicatorColor: AppColor.scaffoldBackground,
           indicatorWeight: 3.5,
           tabs: const [
@@ -276,7 +276,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
     List<Widget>? actions,
   }) {
     return Card(
-      color: AppColor.cardBackground,
+      color: AppColor.whiteColor,
       margin: const EdgeInsets.symmetric(vertical: 6),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
@@ -334,7 +334,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
               itemBuilder: (context, index) {
                 final a = activities[index];
                 return Card(
-                  color: AppColor.cardBackground,
+                  color: AppColor.whiteColor,
                   margin: const EdgeInsets.only(bottom: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -465,7 +465,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
                       const SizedBox(width: 8),
                       Expanded(
                         child: Card(
-                          color: AppColor.cardBackground,
+                          color: AppColor.whiteColor,
                           margin: const EdgeInsets.only(bottom: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -531,7 +531,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
                 itemBuilder: (context, index) {
                   final log = callLogs[index];
                   return Card(
-                    color: AppColor.cardBackground,
+                    color: AppColor.whiteColor,
                     margin: const EdgeInsets.only(bottom: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

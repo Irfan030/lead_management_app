@@ -13,5 +13,6 @@ class RoutePath {
   static const String contactInfo = '/contact-info';
   static const String lead = '/lead';
   static const String attendance = '/attendance';
+  static const String attendanceHistory = '/attendance-history';
   static const String map = '/map';
 }

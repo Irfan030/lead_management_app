@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:leads_management_app/constant.dart';
 import 'package:leads_management_app/route/routePath.dart';
 import 'package:leads_management_app/theme/colors.dart';
 import 'package:leads_management_app/widgets/titleWidget.dart';
@@ -12,33 +13,34 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
+  AnimationController? _controller;
+  Animation<double>? _animation;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 2),
       vsync: this,
     );
 
     _animation = CurvedAnimation(
-      parent: _controller,
+      parent: _controller!,
       curve: Curves.easeInOut,
     );
 
-    _controller.forward();
+    _controller!.forward();
 
-    // Navigate to login screen after animation
     Future.delayed(const Duration(seconds: 3), () {
-      Navigator.pushReplacementNamed(context, RoutePath.login);
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, RoutePath.login);
+      }
     });
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
@@ -48,16 +50,15 @@ class _SplashScreenState extends State<SplashScreen>
       backgroundColor: AppColor.mainColor,
       body: Center(
         child: FadeTransition(
-          opacity: _animation,
+          opacity: _animation!,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Replace with your app logo
               Container(
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColor.whiteColor,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Icon(
@@ -71,13 +72,13 @@ class _SplashScreenState extends State<SplashScreen>
                 val: "Leads Management",
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColor.whiteColor,
               ),
               const SizedBox(height: 8),
               TitleWidget(
                 val: "Manage your leads efficiently",
                 fontSize: 16,
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withAlphaDouble(0.8),
               ),
             ],
           ),

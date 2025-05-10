@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:leads_management_app/constant.dart';
 import 'package:leads_management_app/route/routePath.dart';
 import 'package:leads_management_app/theme/colors.dart';
+import 'package:leads_management_app/theme/sizeConfig.dart';
 import 'package:leads_management_app/widgets/defaultTextInput.dart';
 import 'package:leads_management_app/widgets/loader.dart';
 import 'package:leads_management_app/widgets/textbutton.dart';
@@ -20,10 +22,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  // Test credentials
-  static const String testEmail = 'admin@example.com';
-  static const String testPassword = 'admin123';
-
   @override
   void dispose() {
     _emailController.dispose();
@@ -37,9 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 1));
-
+      await Future.delayed(const Duration(seconds: 2));
       if (mounted) {
         Navigator.pushReplacementNamed(context, RoutePath.dashboard);
       }
@@ -49,7 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
           const SnackBar(
             content: TitleWidget(
               val: "Login failed. Please try again.",
-              color: Colors.white,
+              color: AppColor.whiteColor,
             ),
             backgroundColor: AppColor.errorColor,
           ),
@@ -67,7 +63,6 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -76,14 +71,13 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 40),
-                // Logo
+                SizedBox(height: getProportionateScreenHeight(40)),
                 Center(
                   child: Container(
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      color: AppColor.mainColor.withOpacity(0.1),
+                      color: AppColor.mainColor.withAlphaDouble(0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Icon(
@@ -93,22 +87,22 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 40),
-                // Welcome Text
+                SizedBox(height: getProportionateScreenHeight(40)),
                 const TitleWidget(
                   val: "Welcome Back!",
                   fontSize: 24,
+                  letterSpacing: 0,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  color: AppColor.textPrimary,
                 ),
                 const SizedBox(height: 8),
-                TitleWidget(
+                const TitleWidget(
                   val: "Sign in to continue",
                   fontSize: 16,
-                  color: Colors.grey[600]!,
+                  letterSpacing: 0,
+                  color: AppColor.textSecondary,
                 ),
-                const SizedBox(height: 32),
-                // Email Field
+                SizedBox(height: getProportionateScreenHeight(32)),
                 DefaultTextInput(
                   hint: "Enter your email",
                   label: "Email",
@@ -119,7 +113,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   errorMsg: "Please enter a valid email",
                 ),
                 const SizedBox(height: 16),
-                // Password Field
                 DefaultTextInput(
                   hint: "Enter your password",
                   label: "Password",
@@ -143,10 +136,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                // Forgot Password
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButtonWidget(
+                    letterSpacing: 0,
                     text: "Forgot Password?",
                     onPressed: () {
                       Navigator.pushNamed(context, RoutePath.forgotPassword);
@@ -154,30 +147,30 @@ class _LoginScreenState extends State<LoginScreen> {
                     textColor: AppColor.mainColor,
                   ),
                 ),
-                const SizedBox(height: 24),
-                // Login Button
+                SizedBox(height: getProportionateScreenHeight(24)),
                 _isLoading
                     ? const Center(child: Loader())
                     : TextButtonWidget(
                         text: "Login",
                         onPressed: _handleLogin,
                         backgroundColor: AppColor.mainColor,
-                        textColor: Colors.white,
+                        textColor: AppColor.whiteColor,
                         fontSize: 16,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         borderRadius: 8,
                       ),
-                const SizedBox(height: 24),
-                // Sign Up Link
+                SizedBox(height: getProportionateScreenHeight(24)),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    TitleWidget(
+                    const TitleWidget(
+                      letterSpacing: 0,
                       val: "Don't have an account? ",
                       fontSize: 14,
-                      color: Colors.grey[600]!,
+                      color: AppColor.textSecondary,
                     ),
                     TextButtonWidget(
+                      letterSpacing: 0,
                       text: "Sign Up",
                       onPressed: () {
                         Navigator.pushNamed(context, RoutePath.signup);

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:leads_management_app/route/routePath.dart';
+import 'package:leads_management_app/screens/attendance/attendance_history_screen.dart';
 import 'package:leads_management_app/screens/attendance/attendance_screen.dart';
 import 'package:leads_management_app/screens/auth/forgot_password_screen.dart';
 import 'package:leads_management_app/screens/auth/login_screen.dart';
@@ -40,7 +41,13 @@ class AppRoute {
         return MaterialPageRoute(
           builder: (_) => const AttendanceScreen(),
         );
-      case RoutePath.attendance:
+
+      case RoutePath.attendanceHistory:
+        return MaterialPageRoute(
+          builder: (_) => const AttendanceHistoryScreen(),
+        );
+
+      case RoutePath.map:
         return MaterialPageRoute(
           builder: (_) => const MapScreen(),
         );

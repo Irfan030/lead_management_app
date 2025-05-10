@@ -14,7 +14,7 @@ class AppColor {
   static const Color scaffoldBackground = Color(
     0xFFF5F7FA,
   ); // Light grey-blue background
-  static const Color cardBackground = Color(0xFFFFFFFF); // Pure White for cards
+  static const Color whiteColor = Color(0xFFFFFFFF); // Pure White for cards
 
   // Text colors
   static const Color textPrimary = Color(

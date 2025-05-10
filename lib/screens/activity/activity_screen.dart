@@ -634,7 +634,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                           );
                         },
                         child: Card(
-                          color: AppColor.cardBackground,
+                          color: AppColor.whiteColor,
                           margin: const EdgeInsets.only(bottom: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),

@@ -35,6 +35,7 @@ class DefaultDropDown<T> extends StatelessWidget {
         validator: (value) => validator ? errorMsg : null,
         icon: const Icon(Icons.keyboard_arrow_down_rounded),
         decoration: InputDecoration(
+          fillColor: AppColor.whiteColor,
           contentPadding: const EdgeInsets.symmetric(
             vertical: 0.0,
             horizontal: 10.0,
@@ -44,7 +45,7 @@ class DefaultDropDown<T> extends StatelessWidget {
           labelStyle: TextStyle(
             color: AppColor.iconColor,
             fontSize: 14,
-            fontFamily: AppData.openSansMedium,
+            fontFamily: AppData.poppinsMedium,
           ),
           enabledBorder: OutlineInputBorder(
             borderSide: const BorderSide(color: AppColor.secondaryColor),
@@ -68,7 +69,7 @@ class DefaultDropDown<T> extends StatelessWidget {
           style: TextStyle(
             color: AppColor.secondaryColor,
             fontSize: 12,
-            fontFamily: AppData.openSansMedium,
+            fontFamily: AppData.poppinsMedium,
           ),
         ),
         onChanged: (value) {
@@ -88,8 +89,8 @@ class DefaultDropDown<T> extends StatelessWidget {
               margin: const EdgeInsets.all(0.0),
               child: TitleWidget(
                 val: getDisplayText(e),
-                color: AppColor.dividerColor,
-                fontFamily: AppData.openSansRegular,
+                color: AppColor.textSecondary,
+                fontFamily: AppData.poppinsMedium,
                 fontSize: 12,
               ),
             ),

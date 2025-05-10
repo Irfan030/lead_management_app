@@ -747,14 +747,14 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
         title: const Text(
           'Lead Map',
           style: TextStyle(
-            color: AppColor.cardBackground,
+            color: AppColor.whiteColor,
           ),
         ),
         actions: [
           IconButton(
             icon: Icon(
               _showLeads ? Icons.people : Icons.people_outline,
-              color: AppColor.cardBackground,
+              color: AppColor.whiteColor,
             ),
             onPressed: _toggleLeads,
             tooltip: 'Toggle Leads',
@@ -762,16 +762,16 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
           IconButton(
             icon: Icon(
               _showTeam ? Icons.group : Icons.group_outlined,
-              color: AppColor.cardBackground,
+              color: AppColor.whiteColor,
             ),
             onPressed: _toggleTeam,
             tooltip: 'Toggle Team',
           ),
           PopupMenuButton<String>(
-            color: AppColor.cardBackground,
+            color: AppColor.whiteColor,
             icon: const Icon(
               Icons.filter_list,
-              color: AppColor.cardBackground,
+              color: AppColor.whiteColor,
             ),
             onSelected: (String stage) {
               setState(() {
@@ -808,7 +808,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
           IconButton(
             icon: Icon(
               _showOnlyNearbyLeads ? Icons.location_on : Icons.location_off,
-              color: AppColor.cardBackground,
+              color: AppColor.whiteColor,
             ),
             onPressed: () {
               setState(() {
@@ -890,7 +890,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppColor.cardBackground,
+                    color: AppColor.whiteColor,
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Column(

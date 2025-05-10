@@ -22,7 +22,7 @@ class OpportunityViewUpdateScreen extends StatelessWidget {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Card(
-          color: AppColor.cardBackground,
+          color: AppColor.whiteColor,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           elevation: 3,

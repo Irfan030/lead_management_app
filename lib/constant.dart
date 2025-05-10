@@ -1,20 +1,14 @@
 import 'package:flutter/material.dart';
 
 class AppData {
-  static String appName = "Leads";
-
+  static String appName = "Leads Manager";
   static const profile = "assets/images/user.jpg";
-
-  static String openSansRegular = "OpenSansRegular";
-  static String openSansMedium = "OpenSansMedium";
-  static String openSansBold = "OpenSansBold";
-  static String khandBold = "KhandBold";
-  static String openSansSemiBold = "OpenSansSemibold";
-
   static String poppinsRegular = "PoppinsRegular";
   static String poppinsSemiBold = "PoppinsSemiBold";
   static String poppinsMedium = "PoppinsMedium";
   static String poppinsItalic = "PoppinsItalic";
+  static String poppinsBold = "PoppinsBold";
+  static String poppinsLight = "PoppinsLight";
 
   static String imageBaseUrl = " ";
 
@@ -122,23 +116,6 @@ class AppData {
     return "";
   }
 
-  static bool zipCodeValidation(String val) {
-    final zipCodeRegex = RegExp(r'^\d{5}$');
-    if (!zipCodeRegex.hasMatch(val)) {
-      return true;
-    }
-    return false;
-  }
-
-  static String zipCodeErrorMsg(String val) {
-    if (val.isEmpty) {
-      return "ZIP code is required";
-    } else if (!RegExp(r'^\d{5}$').hasMatch(val)) {
-      return "Enter a valid 5-digit ZIP code";
-    }
-    return "";
-  }
-
   static descriptionValidation(String val) {
     if (val.isEmpty) {
       return true;
@@ -155,5 +132,12 @@ class AppData {
       return isMesssage ? "Invalid otp" : true;
     }
     return isMesssage ? "" : false;
+  }
+}
+
+// Move the extension OUTSIDE the class
+extension ColorExtensions on Color {
+  Color withAlphaDouble(double opacity) {
+    return this.withAlpha((opacity * 255).round());
   }
 }

@@ -23,7 +23,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: Text(
         title,
         style: TextStyle(
-          color: AppColor.cardBackground,
+          color: AppColor.whiteColor,
           fontSize: getProportionateScreenWidth(18), // Using your SizeConfig
           fontWeight: FontWeight.w600,
         ),
@@ -31,7 +31,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       leading: IconButton(
         icon: Icon(
           Icons.arrow_back_ios_new,
-          color: AppColor.cardBackground,
+          color: AppColor.whiteColor,
           size: getProportionateScreenWidth(20),
         ),
         onPressed: onBack ?? () => Navigator.of(context).pop(),

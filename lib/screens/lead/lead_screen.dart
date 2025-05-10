@@ -195,7 +195,7 @@ class _LeadListScreenState extends State<LeadListScreen> {
 
   void showStageFilterBottomSheet() {
     showModalBottomSheet(
-      backgroundColor: AppColor.cardBackground,
+      backgroundColor: AppColor.whiteColor,
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -429,7 +429,7 @@ class _LeadListScreenState extends State<LeadListScreen> {
                       return GestureDetector(
                         onTap: () => _openLeadDetails(lead),
                         child: Card(
-                          color: AppColor.cardBackground,
+                          color: AppColor.whiteColor,
                           margin: const EdgeInsets.symmetric(
                             horizontal: 12,
                             vertical: 8,

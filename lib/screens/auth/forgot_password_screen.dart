@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:leads_management_app/route/routePath.dart';
 import 'package:leads_management_app/theme/colors.dart';
+import 'package:leads_management_app/theme/sizeConfig.dart';
 import 'package:leads_management_app/widgets/defaultTextInput.dart';
 import 'package:leads_management_app/widgets/loader.dart';
 import 'package:leads_management_app/widgets/textbutton.dart';
@@ -31,7 +32,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     try {
       // Simulate API call
-      await Future.delayed(const Duration(seconds: 1));
+      await Future.delayed(const Duration(seconds: 2));
 
       if (mounted) {
         Navigator.pushReplacementNamed(context, RoutePath.otpVerification);
@@ -60,12 +61,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: AppColor.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -77,20 +77,21 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                TitleWidget(
+                const TitleWidget(
                   val: "Forgot Password",
                   fontSize: 24,
+                  letterSpacing: 0,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  color: AppColor.textPrimary,
                 ),
                 const SizedBox(height: 8),
-                TitleWidget(
+                const TitleWidget(
                   val: "Enter your email to reset your password",
                   fontSize: 16,
-                  color: Colors.grey[600]!,
+                  letterSpacing: 0,
+                  color: AppColor.textSecondary,
                 ),
-                const SizedBox(height: 32),
-                // Email Field
+                SizedBox(height: getProportionateScreenHeight(32)),
                 DefaultTextInput(
                   hint: "Enter your email",
                   label: "Email",
@@ -100,24 +101,24 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   validator: true,
                   errorMsg: "Please enter a valid email",
                 ),
-                const SizedBox(height: 32),
-                // Reset Password Button
+                SizedBox(height: getProportionateScreenHeight(32)),
                 _isLoading
                     ? const Center(child: Loader())
                     : TextButtonWidget(
                         text: "Send Reset Link",
                         onPressed: _handleResetPassword,
+                        letterSpacing: 0,
                         backgroundColor: AppColor.mainColor,
-                        textColor: Colors.white,
+                        textColor: AppColor.whiteColor,
                         fontSize: 16,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         borderRadius: 8,
                       ),
-                const SizedBox(height: 24),
-                // Back to Login
+                SizedBox(height: getProportionateScreenHeight(24)),
                 Center(
                   child: TextButtonWidget(
                     text: "Back to Login",
+                    letterSpacing: 0,
                     onPressed: () => Navigator.pop(context),
                     textColor: AppColor.mainColor,
                   ),

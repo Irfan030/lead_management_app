@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:leads_management_app/constant.dart';
 import 'package:leads_management_app/theme/colors.dart';
+import 'package:leads_management_app/widgets/defaultDropDown.dart';
+import 'package:leads_management_app/widgets/titleWidget.dart';
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({super.key});
@@ -11,16 +14,16 @@ class ReportsScreen extends StatefulWidget {
 class _ReportsScreenState extends State<ReportsScreen> {
   String selectedFilter = 'This Month';
 
-  final List<String> filters = [
+  final List<String> filters = const [
     'This Month',
     'This Year',
     'Last 3 Months',
     'Last 6 Months',
   ];
 
-  final opportunitySummary = {'Created': 45, 'Won': 18, 'Lost': 12};
+  final opportunitySummary = const {'Created': 45, 'Won': 18, 'Lost': 12};
 
-  final topOpportunities = [
+  final topOpportunities = const [
     {'name': 'Opportunity A', 'customer': 'ABC Corp', 'amount': 12000},
     {'name': 'Opportunity B', 'customer': 'XYZ Ltd', 'amount': 10500},
     {'name': 'Opportunity C', 'customer': 'Acme Inc', 'amount': 9800},
@@ -28,7 +31,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     {'name': 'Opportunity E', 'customer': 'Nexus LLC', 'amount': 8600},
   ];
 
-  final stageData = {
+  final stageData = const {
     'New': 10,
     'Qualified': 15,
     'Proposal': 8,
@@ -36,7 +39,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     'Lost': 12,
   };
 
-  final stageRevenue = {
+  final stageRevenue = const {
     'New': 3000,
     'Qualified': 7500,
     'Proposal': 6000,
@@ -44,24 +47,102 @@ class _ReportsScreenState extends State<ReportsScreen> {
     'Lost': 4000,
   };
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+        child: ListView(
+          children: [
+            const SizedBox(height: 16),
+
+            // Filter Section
+
+            _buildFilterSection(),
+            const SizedBox(height: 16),
+
+            // Summary Section
+            _buildSummarySection(),
+            const SizedBox(height: 24),
+
+            // Top Opportunities Section
+            _buildTopOpportunitiesSection(),
+            const SizedBox(height: 24),
+
+            // Lead Stage Report Section
+            _buildLeadStageReportSection(),
+            const SizedBox(height: 24),
+
+            // Lead Stage vs Revenue Section
+            _buildLeadStageRevenueSection(),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterSection() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        SizedBox(
+          width: 200,
+          child: DefaultDropDown<String>(
+            hint: 'Select Filter',
+            label: 'Filter',
+            value: selectedFilter,
+            listValues: filters,
+            onChange: (value) => setState(() => selectedFilter = value),
+            getDisplayText: (value) => value,
+            getValue: (value) => value,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSummarySection() {
+    return Row(
+      children: [
+        _buildSummaryCard(
+          'Created',
+          opportunitySummary['Created']!,
+          Colors.blue,
+        ),
+        _buildSummaryCard(
+          'Won',
+          opportunitySummary['Won']!,
+          Colors.green,
+        ),
+        _buildSummaryCard(
+          'Lost',
+          opportunitySummary['Lost']!,
+          Colors.red,
+        ),
+      ],
+    );
+  }
+
   Widget _buildSummaryCard(String label, int value, Color color) {
     return Expanded(
       child: Card(
-        color: color.withOpacity(0.1),
+        color: color.withAlphaDouble(0.2),
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(
             children: [
-              Text(
-                value.toString(),
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
+              TitleWidget(
+                val: value.toString(),
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: color,
               ),
               const SizedBox(height: 4),
-              Text(label, style: TextStyle(color: color)),
+              TitleWidget(
+                val: label,
+                color: color,
+              ),
             ],
           ),
         ),
@@ -69,14 +150,67 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
+  Widget _buildTopOpportunitiesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const TitleWidget(
+          val: 'Top 5 Opportunities',
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+        ),
+        ...topOpportunities.map(_buildTopOpportunityCard).toList(),
+      ],
+    );
+  }
+
   Widget _buildTopOpportunityCard(Map<String, dynamic> opportunity) {
     return Card(
-      color: AppColor.cardBackground,
+      color: AppColor.whiteColor,
       child: ListTile(
-        title: Text(opportunity['name']),
-        subtitle: Text(opportunity['customer']),
-        trailing: Text('R ${opportunity['amount']}'),
+        title: TitleWidget(
+          val: opportunity['name'],
+          color: AppColor.textPrimary,
+        ),
+        subtitle: TitleWidget(
+          val: opportunity['customer'],
+          color: AppColor.textSecondary,
+        ),
+        trailing: TitleWidget(
+          val: 'R ${opportunity['amount']}',
+          color: AppColor.textPrimary,
+        ),
       ),
+    );
+  }
+
+  Widget _buildLeadStageReportSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const TitleWidget(
+          val: 'Opportunity Lead Stage Report',
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+        ),
+        const SizedBox(height: 8),
+        _buildBarChart(stageData),
+      ],
+    );
+  }
+
+  Widget _buildLeadStageRevenueSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const TitleWidget(
+          val: 'Lead Stage vs Revenue Report',
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+        ),
+        const SizedBox(height: 8),
+        _buildBarChart(stageRevenue, isRevenue: true),
+      ],
     );
   }
 
@@ -89,7 +223,13 @@ class _ReportsScreenState extends State<ReportsScreen> {
           padding: const EdgeInsets.symmetric(vertical: 6),
           child: Row(
             children: [
-              SizedBox(width: 80, child: Text(entry.key)),
+              SizedBox(
+                width: 80,
+                child: TitleWidget(
+                  val: entry.key,
+                  color: AppColor.textPrimary,
+                ),
+              ),
               Expanded(
                 child: Stack(
                   children: [
@@ -112,88 +252,14 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 ),
               ),
               const SizedBox(width: 10),
-              Text(isRevenue ? 'R ${entry.value}' : '${entry.value}'),
+              TitleWidget(
+                val: isRevenue ? 'R ${entry.value}' : '${entry.value}',
+                color: AppColor.textPrimary,
+              ),
             ],
           ),
         );
       }).toList(),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColor.scaffoldBackground,
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: ListView(
-          children: [
-            // Filter
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                DropdownButton<String>(
-                  value: selectedFilter,
-                  items: filters
-                      .map((f) => DropdownMenuItem(value: f, child: Text(f)))
-                      .toList(),
-                  onChanged: (val) => setState(() => selectedFilter = val!),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Summary
-            Row(
-              children: [
-                _buildSummaryCard(
-                  'Created',
-                  opportunitySummary['Created']!,
-                  Colors.blue,
-                ),
-                _buildSummaryCard(
-                  'Won',
-                  opportunitySummary['Won']!,
-                  Colors.green,
-                ),
-                _buildSummaryCard(
-                  'Lost',
-                  opportunitySummary['Lost']!,
-                  Colors.red,
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            // Top Opportunities
-            const Text(
-              'Top 5 Opportunities',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            ...topOpportunities.map(_buildTopOpportunityCard).toList(),
-
-            const SizedBox(height: 24),
-
-            // Lead Stage Report
-            const Text(
-              'Opportunity Lead Stage Report',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            _buildBarChart(stageData),
-
-            const SizedBox(height: 24),
-
-            // Lead Stage Vs Revenue
-            const Text(
-              'Lead Stage vs Revenue Report',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            _buildBarChart(stageRevenue, isRevenue: true),
-          ],
-        ),
-      ),
     );
   }
 }

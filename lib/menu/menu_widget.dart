@@ -46,7 +46,7 @@ class MenuWidget extends StatelessWidget {
                   TitleWidget(
                     val: 'Mitchell Admin',
                     fontSize: 20,
-                    color: AppColor.cardBackground,
+                    color: AppColor.whiteColor,
                     fontWeight: FontWeight.bold,
                   ),
                 ],
@@ -68,7 +68,7 @@ class MenuWidget extends StatelessWidget {
                 onPressed: () => onItemClick('Logout'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColor.mainColor,
-                  foregroundColor: AppColor.cardBackground,
+                  foregroundColor: AppColor.whiteColor,
                   minimumSize: const Size(double.infinity, 50),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),

@@ -98,7 +98,7 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
               itemBuilder: (context, index) {
                 final opportunity = _filteredOpportunities[index];
                 return Card(
-                  color: AppColor.cardBackground,
+                  color: AppColor.whiteColor,
                   margin:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   elevation: 3,

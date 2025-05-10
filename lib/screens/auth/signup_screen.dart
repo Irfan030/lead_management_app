@@ -51,7 +51,7 @@ class _SignupScreenState extends State<SignupScreen> {
           const SnackBar(
             content: TitleWidget(
               val: "Signup failed. Please try again.",
-              color: Colors.white,
+              color: AppColor.whiteColor,
             ),
             backgroundColor: AppColor.errorColor,
           ),
@@ -69,12 +69,11 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: AppColor.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -86,17 +85,19 @@ class _SignupScreenState extends State<SignupScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                TitleWidget(
+                const TitleWidget(
                   val: "Create Account",
                   fontSize: 24,
+                  letterSpacing: 0,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  color: AppColor.textPrimary,
                 ),
                 const SizedBox(height: 8),
-                TitleWidget(
+                const TitleWidget(
+                  letterSpacing: 0,
                   val: "Sign up to get started",
                   fontSize: 16,
-                  color: Colors.grey[600]!,
+                  color: AppColor.textSecondary,
                 ),
                 const SizedBox(height: 32),
                 // Name Field
@@ -171,9 +172,10 @@ class _SignupScreenState extends State<SignupScreen> {
                     ? const Center(child: Loader())
                     : TextButtonWidget(
                         text: "Sign Up",
+                        letterSpacing: 0,
                         onPressed: _handleSignup,
                         backgroundColor: AppColor.mainColor,
-                        textColor: Colors.white,
+                        textColor: AppColor.whiteColor,
                         fontSize: 16,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         borderRadius: 8,
@@ -183,10 +185,11 @@ class _SignupScreenState extends State<SignupScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    TitleWidget(
-                      val: "Already have an account? ",
+                    const TitleWidget(
+                      val: "Already have an account?  ",
                       fontSize: 14,
-                      color: Colors.grey[600]!,
+                      letterSpacing: 0,
+                      color: AppColor.textSecondary,
                     ),
                     TextButtonWidget(
                       text: "Login",

@@ -5,8 +5,8 @@ import 'package:leads_management_app/screens/quotation/quotation_order_screen.da
 import 'package:leads_management_app/screens/report/reports_screen.dart';
 import 'package:leads_management_app/theme/colors.dart';
 import 'package:leads_management_app/widgets/loader.dart';
-import 'package:leads_management_app/widgets/textbutton.dart';
-import 'package:leads_management_app/widgets/titleWidget.dart';
+import 'package:leads_management_app/widgets/text_button.dart';
+import 'package:leads_management_app/widgets/title_widget.dart';
 
 import 'activity/activity_screen.dart';
 import 'attendance/attendance_screen.dart';

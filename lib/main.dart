@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:leads_management_app/providers/attendance_provider.dart';
 import 'package:leads_management_app/providers/quotation_provider.dart';
 import 'package:leads_management_app/route/app_routes.dart';
-import 'package:leads_management_app/route/routePath.dart';
+import 'package:leads_management_app/route/route_path.dart';
 import 'package:leads_management_app/theme/colors.dart';
-import 'package:leads_management_app/theme/sizeConfig.dart';
+import 'package:leads_management_app/theme/size_config.dart';
 import 'package:provider/provider.dart';
-import 'package:leads_management_app/providers/attendance_provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -88,7 +88,8 @@ class MyApp extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: AppColor.errorColor),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
         ),
         initialRoute: RoutePath.splash,

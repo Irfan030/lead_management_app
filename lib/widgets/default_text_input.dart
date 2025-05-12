@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:leads_management_app/constant.dart';
 import 'package:leads_management_app/theme/colors.dart';
 
 class DefaultTextInput extends StatelessWidget {
+  final TextEditingController? controller;
   final String hint;
   final String label;
   final String? type;
@@ -11,7 +13,6 @@ class DefaultTextInput extends StatelessWidget {
   final String errorMsg;
   final bool validator;
   final String value;
-  final TextEditingController? controller;
   final TextInputType? keyboardType;
   final TextCapitalization textCapitalization;
   final bool obscureText;
@@ -22,9 +23,11 @@ class DefaultTextInput extends StatelessWidget {
   final bool readOnly;
   final Function(String)? onSubmitted;
   final FocusNode? focusNode;
+  final String? Function(String?)? customValidator;
 
   const DefaultTextInput({
     super.key,
+    this.controller,
     required this.hint,
     required this.label,
     this.type,
@@ -33,7 +36,6 @@ class DefaultTextInput extends StatelessWidget {
     this.errorMsg = "Invalid value",
     this.value = "",
     required this.onChange,
-    this.controller,
     this.keyboardType,
     this.textCapitalization = TextCapitalization.none,
     this.obscureText = false,
@@ -44,6 +46,7 @@ class DefaultTextInput extends StatelessWidget {
     this.readOnly = false,
     this.onSubmitted,
     this.focusNode,
+    this.customValidator,
   });
 
   @override
@@ -64,44 +67,49 @@ class DefaultTextInput extends StatelessWidget {
       },
       onFieldSubmitted: onSubmitted,
       initialValue: controller == null ? value : null,
-      validator: (value) => validator ? errorMsg : null,
+      validator: customValidator ?? (value) => validator ? errorMsg : null,
+      style: TextStyle(
+        color: Colors.black87,
+        fontSize: 14,
+        fontFamily: AppData.poppinsMedium,
+      ),
       decoration: InputDecoration(
-        floatingLabelBehavior: FloatingLabelBehavior.always,
+        fillColor: Colors.white,
         filled: true,
         contentPadding: const EdgeInsets.symmetric(
-          vertical: 0.0,
-          horizontal: 10.0,
+          vertical: 12,
+          horizontal: 16,
         ),
-        fillColor: Colors.white,
-        hintText: hint,
+        floatingLabelBehavior: FloatingLabelBehavior.always,
         labelText: label,
         prefixIcon: prefixIcon,
         suffixIcon: suffixIcon,
-        labelStyle: const TextStyle(
-          color: AppColor.mainColor,
-          fontSize: 14,
-          fontFamily: "PoppinsMedium",
+        labelStyle: TextStyle(
+          color: AppColor.textPrimary,
+          fontSize: 16,
+          fontFamily: AppData.poppinsMedium,
         ),
-        hintStyle: const TextStyle(
-          color: AppColor.dividerColor,
+        hintText: hint,
+        hintStyle: TextStyle(
+          color: AppColor.textSecondary,
           fontSize: 12,
-          fontFamily: "PoppinsRegular",
+          fontFamily: AppData.poppinsMedium,
         ),
         enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: AppColor.mainColor),
-          borderRadius: BorderRadius.circular(10.0),
+          borderSide: const BorderSide(color: AppColor.secondaryColor),
+          borderRadius: BorderRadius.circular(12),
         ),
         focusedBorder: OutlineInputBorder(
           borderSide: const BorderSide(color: AppColor.mainColor),
-          borderRadius: BorderRadius.circular(10.0),
+          borderRadius: BorderRadius.circular(12),
         ),
         errorBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: AppColor.mainColor),
-          borderRadius: BorderRadius.circular(10.0),
+          borderSide: const BorderSide(color: Colors.red),
+          borderRadius: BorderRadius.circular(12),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: AppColor.mainColor),
-          borderRadius: BorderRadius.circular(10.0),
+          borderSide: const BorderSide(color: Colors.red),
+          borderRadius: BorderRadius.circular(12),
         ),
       ),
     );

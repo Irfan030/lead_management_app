@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:leads_management_app/theme/colors.dart';
-import 'package:leads_management_app/theme/sizeConfig.dart';
+import 'package:leads_management_app/theme/size_config.dart';
 
 class TextButtonWithIcon extends StatelessWidget {
   final String text;
@@ -36,7 +36,7 @@ class TextButtonWithIcon extends StatelessWidget {
               height: iconSize ?? getProportionateScreenWidth(18),
               child: const CircularProgressIndicator(
                 strokeWidth: 2,
-                color: AppColor.mainColor,
+                color: AppColor.whiteColor,
               ),
             )
           : Icon(
@@ -59,4 +59,4 @@ class TextButtonWithIcon extends StatelessWidget {
       ),
     );
   }
-} 
+}

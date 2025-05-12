@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:leads_management_app/route/routePath.dart';
+import 'package:leads_management_app/route/route_path.dart';
 import 'package:leads_management_app/theme/colors.dart';
-import 'package:leads_management_app/theme/sizeConfig.dart';
-import 'package:leads_management_app/widgets/defaultTextInput.dart';
+import 'package:leads_management_app/theme/size_config.dart';
+import 'package:leads_management_app/widgets/default_text_input.dart';
 import 'package:leads_management_app/widgets/loader.dart';
-import 'package:leads_management_app/widgets/textbutton.dart';
-import 'package:leads_management_app/widgets/titleWidget.dart';
+import 'package:leads_management_app/widgets/text_button.dart';
+import 'package:leads_management_app/widgets/title_widget.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});

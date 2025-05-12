@@ -8,6 +8,7 @@ class RoutePath {
   static const String opportunity = '/opportunity';
   static const String quotation = '/quotation';
   static const String invoices = '/invoices';
+  static const String invoicesDetails = '/invoices-details';
   static const String activity = '/activity';
   static const String reports = '/reports';
   static const String contactInfo = '/contact-info';

@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:leads_management_app/constant.dart';
 import 'package:leads_management_app/providers/attendance_provider.dart';
-import 'package:leads_management_app/route/routePath.dart';
+import 'package:leads_management_app/route/route_path.dart';
 import 'package:leads_management_app/theme/colors.dart';
-import 'package:leads_management_app/theme/sizeConfig.dart';
-import 'package:leads_management_app/widgets/defaultDropDown.dart';
+import 'package:leads_management_app/theme/size_config.dart';
+import 'package:leads_management_app/widgets/default_drop_down.dart';
 import 'package:leads_management_app/widgets/text_button_with_icon.dart';
-import 'package:leads_management_app/widgets/titleWidget.dart';
+import 'package:leads_management_app/widgets/title_widget.dart';
 import 'package:provider/provider.dart';
 
 class AttendanceScreen extends StatefulWidget {
@@ -217,7 +217,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Widget _buildCheckInOutButton(AttendanceProvider provider) {
     return SizedBox(
       width: double.infinity,
-      height: getProportionateScreenHeight(56),
+      height: getProportionateScreenHeight(50),
       child: TextButtonWithIcon(
         text: provider.isCheckedIn ? 'CHECK OUT' : 'CHECK IN',
         onPressed: () => provider.handleAttendance(context),

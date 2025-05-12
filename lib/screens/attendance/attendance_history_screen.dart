@@ -3,9 +3,9 @@ import 'package:intl/intl.dart';
 import 'package:leads_management_app/constant.dart';
 import 'package:leads_management_app/providers/attendance_provider.dart';
 import 'package:leads_management_app/theme/colors.dart';
-import 'package:leads_management_app/theme/sizeConfig.dart';
+import 'package:leads_management_app/theme/size_config.dart';
 import 'package:leads_management_app/widgets/appbar.dart';
-import 'package:leads_management_app/widgets/titleWidget.dart';
+import 'package:leads_management_app/widgets/title_widget.dart';
 import 'package:provider/provider.dart';
 
 class AttendanceHistoryScreen extends StatelessWidget {
@@ -46,7 +46,7 @@ class AttendanceHistoryScreen extends StatelessWidget {
           }
 
           return ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 16),
+            padding: EdgeInsets.zero,
             itemCount: provider.filteredHistory.length,
             itemBuilder: (context, index) {
               final record = provider.filteredHistory[index];
@@ -61,12 +61,12 @@ class AttendanceHistoryScreen extends StatelessWidget {
   Widget _buildHistoryCard(AttendanceRecord record) {
     return Card(
       color: AppColor.whiteColor,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(15),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

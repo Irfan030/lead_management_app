@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:leads_management_app/constant.dart';
 import 'package:leads_management_app/theme/colors.dart';
-import 'package:leads_management_app/widgets/titleWidget.dart';
+import 'package:leads_management_app/widgets/title_widget.dart';
 
 class DefaultDropDown<T> extends StatelessWidget {
   final String hint;
@@ -33,7 +33,8 @@ class DefaultDropDown<T> extends StatelessWidget {
       child: DropdownButtonFormField(
         value: value == "" ? null : value,
         validator: (value) => validator ? errorMsg : null,
-        icon: const Icon(Icons.keyboard_arrow_down_rounded),
+        icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
+        isExpanded: true,
         decoration: InputDecoration(
           fillColor: AppColor.whiteColor,
           contentPadding: const EdgeInsets.symmetric(
@@ -44,7 +45,7 @@ class DefaultDropDown<T> extends StatelessWidget {
           labelText: label,
           labelStyle: TextStyle(
             color: AppColor.iconColor,
-            fontSize: 14,
+            fontSize: 16,
             fontFamily: AppData.poppinsMedium,
           ),
           enabledBorder: OutlineInputBorder(
@@ -71,23 +72,18 @@ class DefaultDropDown<T> extends StatelessWidget {
             fontSize: 12,
             fontFamily: AppData.poppinsMedium,
           ),
+          overflow: TextOverflow.ellipsis,
         ),
         onChanged: (value) {
           onChange(value);
-          // getUserDetail();
         },
-        // validator: (value) {
-        //   if (value == hint) {
-        //     return 'This field is required ';
-        //   }
-        //   return null;
-        // },
         items: listValues.map((e) {
           return DropdownMenuItem(
             value: getValue(e),
             child: Container(
               margin: const EdgeInsets.all(0.0),
               child: TitleWidget(
+                overflow: TextOverflow.ellipsis,
                 val: getDisplayText(e),
                 color: AppColor.textSecondary,
                 fontFamily: AppData.poppinsMedium,

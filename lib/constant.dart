@@ -138,6 +138,6 @@ class AppData {
 // Move the extension OUTSIDE the class
 extension ColorExtensions on Color {
   Color withAlphaDouble(double opacity) {
-    return this.withAlpha((opacity * 255).round());
+    return withAlpha((opacity * 255).round());
   }
 }

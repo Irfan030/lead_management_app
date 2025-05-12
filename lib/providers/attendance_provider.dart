@@ -57,9 +57,9 @@ class AttendanceStats {
 class AttendanceProvider with ChangeNotifier {
   bool _isCheckedIn = false;
   bool _isLoading = false;
-  bool _isLocationLoading = false;
+  bool _isLocationLoading = true;
   Position? _currentPosition;
-  String _statusMessage = 'Not checked in';
+  String _statusMessage = 'Checking location...';
   final List<AttendanceRecord> _attendanceHistory = [];
   String _selectedFilter = 'All';
   final List<String> _filters = ['All', 'Today', 'This Week', 'This Month'];

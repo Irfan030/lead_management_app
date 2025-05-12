@@ -1,28 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:leads_management_app/screens/activity/activity_card.dart';
+import 'package:leads_management_app/screens/activity/activity_model.dart';
 import 'package:leads_management_app/theme/colors.dart';
-
-class Activity {
-  final String type;
-  final String desc;
-  final DateTime dateTime;
-  final bool isCompleted;
-  final IconData icon;
-  final Color color;
-  final String? assignedTo;
-
-  Activity({
-    required this.type,
-    required this.desc,
-    required this.dateTime,
-    this.isCompleted = false,
-    required this.icon,
-    required this.color,
-    this.assignedTo,
-  });
-}
+import 'package:leads_management_app/widgets/date_time_picker_field.dart';
+import 'package:leads_management_app/widgets/default_drop_down.dart';
+import 'package:leads_management_app/widgets/default_text_input.dart';
 
 class ActivityScreen extends StatefulWidget {
+  const ActivityScreen({super.key});
+
   @override
   _ActivityScreenState createState() => _ActivityScreenState();
 }
@@ -109,6 +96,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
 
     showModalBottomSheet(
       context: context,
+      backgroundColor: AppColor.scaffoldBackground,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -126,6 +114,25 @@ class _ActivityScreenState extends State<ActivityScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          existingActivity != null
+                              ? 'Edit Activity'
+                              : 'New Activity',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.close),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
                     const Text(
                       'Activity Type',
                       style: TextStyle(
@@ -134,46 +141,15 @@ class _ActivityScreenState extends State<ActivityScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    DropdownButtonFormField<String>(
+                    DefaultDropDown<String>(
+                      hint: 'Select Type',
+                      label: 'Type',
                       value: selectedType,
-                      items: ['Call', 'Email', 'Meeting', 'Task'].map((type) {
-                        IconData icon;
-                        Color color;
-                        switch (type) {
-                          case 'Call':
-                            icon = Icons.phone;
-                            color = Colors.red;
-                            break;
-                          case 'Email':
-                            icon = Icons.email;
-                            color = Colors.green;
-                            break;
-                          case 'Meeting':
-                            icon = Icons.groups;
-                            color = Colors.blue;
-                            break;
-                          default:
-                            icon = Icons.task;
-                            color = Colors.orange;
-                        }
-                        return DropdownMenuItem(
-                          value: type,
-                          child: Row(
-                            children: [
-                              Icon(icon, color: color),
-                              const SizedBox(width: 8),
-                              Text(type),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: (val) =>
-                          setSheetState(() => selectedType = val!),
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
+                      listValues: const ['Call', 'Email', 'Meeting', 'Task'],
+                      onChange: (val) =>
+                          setSheetState(() => selectedType = val),
+                      getDisplayText: (val) => val,
+                      getValue: (val) => val,
                     ),
                     const SizedBox(height: 16),
                     const Text(
@@ -184,15 +160,12 @@ class _ActivityScreenState extends State<ActivityScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    TextField(
+                    DefaultTextInput(
                       controller: descController,
-                      maxLines: 4,
-                      decoration: InputDecoration(
-                        hintText: 'Enter activity details',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
+                      hint: 'Enter activity details',
+                      label: 'Description',
+                      maxlineHeight: 4,
+                      onChange: () {},
                     ),
                     const SizedBox(height: 16),
                     const Text(
@@ -206,69 +179,28 @@ class _ActivityScreenState extends State<ActivityScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: InkWell(
-                            onTap: () async {
-                              final DateTime? picked = await showDatePicker(
-                                context: context,
-                                initialDate: selectedDate,
-                                firstDate: DateTime(2000),
-                                lastDate: DateTime(2101),
-                              );
-                              if (picked != null) {
-                                setSheetState(() => selectedDate = picked);
-                              }
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 14,
-                                horizontal: 12,
-                              ),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.date_range,
-                                      color: Colors.blue),
-                                  const SizedBox(width: 8),
-                                  Text(DateFormat('dd MMM, yyyy')
-                                      .format(selectedDate)),
-                                ],
-                              ),
-                            ),
+                          child: DateTimePickerField(
+                            date: selectedDate,
+                            time: selectedTime,
+                            onDateChanged: (date) =>
+                                setSheetState(() => selectedDate = date),
+                            onTimeChanged: (time) =>
+                                setSheetState(() => selectedTime = time),
+                            label: 'Date',
+                            isDate: true,
                           ),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: InkWell(
-                            onTap: () async {
-                              final TimeOfDay? picked = await showTimePicker(
-                                context: context,
-                                initialTime: selectedTime,
-                              );
-                              if (picked != null) {
-                                setSheetState(() => selectedTime = picked);
-                              }
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 14,
-                                horizontal: 12,
-                              ),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.access_time,
-                                      color: Colors.blue),
-                                  const SizedBox(width: 8),
-                                  Text(selectedTime.format(context)),
-                                ],
-                              ),
-                            ),
+                          child: DateTimePickerField(
+                            date: selectedDate,
+                            time: selectedTime,
+                            onDateChanged: (date) =>
+                                setSheetState(() => selectedDate = date),
+                            onTimeChanged: (time) =>
+                                setSheetState(() => selectedTime = time),
+                            label: 'Time',
+                            isDate: false,
                           ),
                         ),
                       ],
@@ -282,21 +214,15 @@ class _ActivityScreenState extends State<ActivityScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    DropdownButtonFormField<String>(
+                    DefaultDropDown<String>(
+                      hint: 'Select User',
+                      label: 'User',
                       value: selectedUser,
-                      items: ['Demo User', 'User A', 'User B'].map((user) {
-                        return DropdownMenuItem(
-                          value: user,
-                          child: Text(user),
-                        );
-                      }).toList(),
-                      onChanged: (val) =>
-                          setSheetState(() => selectedUser = val!),
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
+                      listValues: const ['Demo User', 'User A', 'User B'],
+                      onChange: (val) =>
+                          setSheetState(() => selectedUser = val),
+                      getDisplayText: (val) => val,
+                      getValue: (val) => val,
                     ),
                     const SizedBox(height: 20),
                     Row(
@@ -312,11 +238,19 @@ class _ActivityScreenState extends State<ActivityScreen> {
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
-                              child: const Text('DELETE'),
+                              child: const Text(
+                                'DELETE',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                           ),
                         if (existingActivity != null) const SizedBox(width: 8),
@@ -372,12 +306,19 @@ class _ActivityScreenState extends State<ActivityScreen> {
                               Navigator.pop(context);
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
+                              backgroundColor: AppColor.mainColor,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            child: const Text('SAVE'),
+                            child: const Text(
+                              'SAVE',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -540,71 +481,38 @@ class _ActivityScreenState extends State<ActivityScreen> {
             child: Row(
               children: [
                 Expanded(
-                  child: DropdownButtonFormField<String>(
+                  child: DefaultDropDown<String>(
+                    hint: 'Select Type',
+                    label: 'Type',
                     value: filterType,
-                    items: types
-                        .map((t) => DropdownMenuItem(
-                              value: t,
-                              child: Text(t),
-                            ))
-                        .toList(),
-                    onChanged: (val) => setState(() => filterType = val!),
-                    decoration: InputDecoration(
-                      labelText: 'Type',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 8,
-                      ),
-                    ),
+                    listValues: types,
+                    onChange: (val) => setState(() => filterType = val),
+                    getDisplayText: (val) => val,
+                    getValue: (val) => val,
                   ),
                 ),
                 const SizedBox(width: 4),
                 Expanded(
-                  child: DropdownButtonFormField<String>(
+                  child: DefaultDropDown<String>(
+                    hint: 'Select Status',
+                    label: 'Status',
                     value: filterStatus,
-                    items: statuses
-                        .map((s) => DropdownMenuItem(
-                              value: s,
-                              child: Text(s),
-                            ))
-                        .toList(),
-                    onChanged: (val) => setState(() => filterStatus = val!),
-                    decoration: InputDecoration(
-                      labelText: 'Status',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 8,
-                      ),
-                    ),
+                    listValues: statuses,
+                    onChange: (val) => setState(() => filterStatus = val),
+                    getDisplayText: (val) => val,
+                    getValue: (val) => val,
                   ),
                 ),
                 const SizedBox(width: 4),
                 Expanded(
-                  child: DropdownButtonFormField<String>(
+                  child: DefaultDropDown<String>(
+                    hint: 'Select User',
+                    label: 'User',
                     value: filterUser,
-                    items: users
-                        .map((u) => DropdownMenuItem(
-                              value: u,
-                              child: Text(u),
-                            ))
-                        .toList(),
-                    onChanged: (val) => setState(() => filterUser = val!),
-                    decoration: InputDecoration(
-                      labelText: 'User',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 8,
-                      ),
-                    ),
+                    listValues: users,
+                    onChange: (val) => setState(() => filterUser = val),
+                    getDisplayText: (val) => val,
+                    getValue: (val) => val,
                   ),
                 ),
               ],
@@ -626,116 +534,11 @@ class _ActivityScreenState extends State<ActivityScreen> {
                     itemBuilder: (context, index) {
                       final activity = filteredActivities[index];
                       final originalIndex = activities.indexOf(activity);
-                      return GestureDetector(
-                        onTap: () {
-                          _showActivityBottomSheet(
-                            existingActivity: activity,
-                            index: originalIndex,
-                          );
-                        },
-                        child: Card(
-                          color: AppColor.whiteColor,
-                          margin: const EdgeInsets.only(bottom: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: activity.color.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Icon(
-                                        activity.icon,
-                                        color: activity.color,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            activity.type,
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            activity.assignedTo ?? 'Unassigned',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.grey[600],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: activity.isCompleted
-                                            ? Colors.green.withOpacity(0.1)
-                                            : Colors.orange.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Text(
-                                        activity.isCompleted
-                                            ? 'Completed'
-                                            : 'Pending',
-                                        style: TextStyle(
-                                          color: activity.isCompleted
-                                              ? Colors.green
-                                              : Colors.orange,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  activity.desc,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.access_time,
-                                      size: 16,
-                                      color: Colors.grey[600],
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      DateFormat('dd MMM, yyyy hh:mm a')
-                                          .format(activity.dateTime),
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey[600],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
+                      return ActivityCard(
+                        activity: activity,
+                        onTap: () => _showActivityBottomSheet(
+                          existingActivity: activity,
+                          index: originalIndex,
                         ),
                       );
                     },

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:leads_management_app/screens/auth/login_screen.dart';
 import 'package:leads_management_app/theme/colors.dart';
-import 'package:leads_management_app/theme/sizeConfig.dart';
+import 'package:leads_management_app/theme/size_config.dart';
 import 'package:leads_management_app/widgets/loader.dart';
-import 'package:leads_management_app/widgets/textbutton.dart';
-import 'package:leads_management_app/widgets/titleWidget.dart';
+import 'package:leads_management_app/widgets/text_button.dart';
+import 'package:leads_management_app/widgets/title_widget.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 class OtpVerificationScreen extends StatefulWidget {

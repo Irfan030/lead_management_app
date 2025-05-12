@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:leads_management_app/theme/colors.dart';
-import 'package:leads_management_app/theme/sizeConfig.dart';
+import 'package:leads_management_app/theme/size_config.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;

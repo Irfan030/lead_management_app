@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:leads_management_app/constant.dart';
 import 'package:leads_management_app/models/lead_model.dart';
 import 'package:leads_management_app/theme/colors.dart';
-import 'package:leads_management_app/theme/sizeConfig.dart';
+import 'package:leads_management_app/theme/size_config.dart';
 
 import 'create_lead_screen.dart';
 
@@ -66,7 +67,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
         bottom: TabBar(
           controller: _tabController,
           labelColor: AppColor.scaffoldBackground,
-          unselectedLabelColor: AppColor.whiteColor.withOpacity(0.7),
+          unselectedLabelColor: AppColor.whiteColor.withAlphaDouble(0.7),
           indicatorColor: AppColor.scaffoldBackground,
           indicatorWeight: 3.5,
           tabs: const [
@@ -161,8 +162,8 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete'),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Delete'),
           ),
         ],
       ),

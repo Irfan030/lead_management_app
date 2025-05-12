@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:leads_management_app/route/routePath.dart';
+import 'package:leads_management_app/route/route_path.dart';
 import 'package:leads_management_app/screens/attendance/attendance_history_screen.dart';
 import 'package:leads_management_app/screens/attendance/attendance_screen.dart';
 import 'package:leads_management_app/screens/auth/forgot_password_screen.dart';
@@ -8,6 +8,7 @@ import 'package:leads_management_app/screens/auth/otp_verification_screen.dart';
 import 'package:leads_management_app/screens/auth/signup_screen.dart';
 import 'package:leads_management_app/screens/auth/splash_screen.dart';
 import 'package:leads_management_app/screens/dashboard.dart';
+import 'package:leads_management_app/screens/invoice/invoice_details_screen.dart';
 import 'package:leads_management_app/screens/invoice/invoices_screen.dart';
 import 'package:leads_management_app/screens/lead/lead_screen.dart';
 import 'package:leads_management_app/screens/maps/map_screens.dart';
@@ -35,6 +36,11 @@ class AppRoute {
         return MaterialPageRoute(builder: (_) => const QuotationOrderScreen());
       case RoutePath.invoices:
         return MaterialPageRoute(builder: (_) => const InvoicesScreen());
+      case RoutePath.invoicesDetails:
+        final Map<String, dynamic> invoice = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => InvoiceDetailScreen(invoice: invoice),
+        );
       case RoutePath.reports:
         return MaterialPageRoute(builder: (_) => const ReportsScreen());
       case RoutePath.attendance:

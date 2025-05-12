@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:leads_management_app/constant.dart';
-import 'package:leads_management_app/route/routePath.dart';
+import 'package:leads_management_app/route/route_path.dart';
 import 'package:leads_management_app/theme/colors.dart';
-import 'package:leads_management_app/widgets/titleWidget.dart';
+import 'package:leads_management_app/widgets/title_widget.dart';
 
 class MenuWidget extends StatelessWidget {
   final Function(String) onItemClick;

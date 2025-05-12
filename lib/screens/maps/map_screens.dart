@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:leads_management_app/constant.dart';
 import 'package:leads_management_app/models/lead_model.dart';
 import 'package:leads_management_app/theme/colors.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -848,7 +849,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
             ),
           if (_isNavigating)
             Container(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withAlphaDouble(0.5),
               child: const Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -932,7 +933,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColor.mainColor.withOpacity(0.1),
+                              color: AppColor.mainColor.withAlphaDouble(0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -950,9 +951,9 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
                         data: SliderThemeData(
                           activeTrackColor: AppColor.mainColor,
                           inactiveTrackColor:
-                              AppColor.mainColor.withOpacity(0.2),
+                              AppColor.mainColor.withAlphaDouble(0.2),
                           thumbColor: AppColor.mainColor,
-                          overlayColor: AppColor.mainColor.withOpacity(0.1),
+                          overlayColor: AppColor.mainColor.withAlphaDouble(0.1),
                           valueIndicatorColor: AppColor.mainColor,
                           valueIndicatorTextStyle: const TextStyle(
                             color: Colors.white,

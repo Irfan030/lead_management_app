@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:leads_management_app/constant.dart';
 import 'package:leads_management_app/models/lead_model.dart';
 import 'package:leads_management_app/theme/colors.dart';
 import 'package:leads_management_app/theme/size_config.dart';
+import 'package:leads_management_app/widgets/loader.dart';
+import 'package:leads_management_app/widgets/text_button.dart';
+import 'package:leads_management_app/widgets/title_widget.dart';
 
 import 'create_lead_screen.dart';
 
@@ -18,6 +20,7 @@ class LeadDetailScreen extends StatefulWidget {
 class _LeadDetailScreenState extends State<LeadDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -35,16 +38,14 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false, // Don't show default back button
+        automaticallyImplyLeading: false,
         backgroundColor: AppColor.mainColor,
         elevation: 0,
-        title: Text(
-          'LEAD DETAILS',
-          style: TextStyle(
-            color: AppColor.whiteColor,
-            fontSize: getProportionateScreenWidth(18),
-            fontWeight: FontWeight.w600,
-          ),
+        title: TitleWidget(
+          val: 'LEAD DETAILS',
+          color: AppColor.whiteColor,
+          fontSize: getProportionateScreenWidth(18),
+          fontWeight: FontWeight.w600,
         ),
         leading: IconButton(
           icon: Icon(
@@ -67,7 +68,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
         bottom: TabBar(
           controller: _tabController,
           labelColor: AppColor.scaffoldBackground,
-          unselectedLabelColor: AppColor.whiteColor.withAlphaDouble(0.7),
+          unselectedLabelColor: AppColor.whiteColor.withOpacity(0.7),
           indicatorColor: AppColor.scaffoldBackground,
           indicatorWeight: 3.5,
           tabs: const [
@@ -78,57 +79,59 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
           ],
         ),
       ),
-      body: Column(
-        children: [
-          Container(
-            color: AppColor.scaffoldBackground,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      body: _isLoading
+          ? const Loader()
+          : Column(
               children: [
+                _buildLeadHeader(),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: TabBarView(
+                    controller: _tabController,
                     children: [
-                      Text(
-                        widget.lead.name,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: _getStageColor(widget.lead.stage ?? 'New'),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          widget.lead.stage ?? 'New',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
+                      _buildGeneralTab(),
+                      _buildActivityTab(),
+                      _buildNotesTab(),
+                      _buildCallLogTab(),
                     ],
                   ),
                 ),
               ],
             ),
-          ),
+    );
+  }
+
+  Widget _buildLeadHeader() {
+    return Container(
+      color: AppColor.scaffoldBackground,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Expanded(
-            child: TabBarView(
-              controller: _tabController,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildGeneralTab(),
-                _buildActivityTab(),
-                _buildNotesTab(),
-                _buildCallLogTab(),
+                TitleWidget(
+                  val: widget.lead.name,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _getStageColor(widget.lead.stage ?? 'New'),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: TitleWidget(
+                    val: widget.lead.stage ?? 'New',
+                    color: Colors.white,
+                    fontSize: 14,
+                  ),
+                ),
               ],
             ),
           ),
@@ -138,14 +141,19 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
   }
 
   void _onEditLead() async {
-    final updatedLead = await Navigator.push<Lead>(
-      context,
-      MaterialPageRoute(
-        builder: (context) => CreateLeadScreen(lead: widget.lead),
-      ),
-    );
-    if (updatedLead != null) {
-      Navigator.pop(context, updatedLead);
+    setState(() => _isLoading = true);
+    try {
+      final updatedLead = await Navigator.push<Lead>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CreateLeadScreen(lead: widget.lead),
+        ),
+      );
+      if (updatedLead != null) {
+        Navigator.pop(context, updatedLead);
+      }
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
@@ -153,23 +161,44 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Lead'),
-        content: const Text('Are you sure you want to delete this lead?'),
+        title: const TitleWidget(
+          val: 'Delete Lead',
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+        content: const TitleWidget(
+          val: 'Are you sure you want to delete this lead?',
+          fontSize: 14,
+        ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+          SizedBox(
+            width: SizeConfig.screenWidth / 4,
+            child: TextButtonWidget(
+              text: 'Cancel',
+              onPressed: () => Navigator.pop(context, false),
+            ),
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Delete'),
+          SizedBox(
+            width: SizeConfig.screenWidth / 4,
+            height: 35,
+            child: TextButtonWidget(
+              borderRadius: 15,
+              text: 'Delete',
+              textColor: Colors.white,
+              backgroundColor: Colors.red,
+              onPressed: () => Navigator.pop(context, true),
+            ),
           ),
         ],
       ),
     );
     if (confirm == true) {
-      Navigator.pop(context, 'delete');
+      setState(() => _isLoading = true);
+      try {
+        Navigator.pop(context, 'delete');
+      } finally {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -181,85 +210,93 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Personal Information',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-                color: Colors.blue,
-              ),
+            TitleWidget(
+              val: 'Personal Information',
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: Colors.blue,
             ),
             const SizedBox(height: 10),
-            _infoCard(
+            _buildInfoCard(
               icon: Icons.person,
               label: 'Contact Name',
               value: widget.lead.name,
             ),
-            _infoCard(
+            _buildInfoCard(
               icon: Icons.phone,
               label: 'Phone Number',
               value: widget.lead.phone,
               actions: [
                 IconButton(
                   icon: const Icon(Icons.phone, color: Colors.blue),
-                  onPressed: () {},
+                  onPressed: () => _makePhoneCall(widget.lead.phone),
                 ),
                 IconButton(
                   icon: const Icon(Icons.message, color: Colors.blue),
-                  onPressed: () {},
+                  onPressed: () => _sendMessage(widget.lead.phone),
                 ),
               ],
             ),
             if (widget.lead.email != null)
-              _infoCard(
+              _buildInfoCard(
                 icon: Icons.email,
                 label: 'Email',
                 value: widget.lead.email!,
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.email, color: Colors.blue),
+                    onPressed: () => _sendEmail(widget.lead.email!),
+                  ),
+                ],
               ),
             if (widget.lead.companyName != null)
-              _infoCard(
+              _buildInfoCard(
                 icon: Icons.business,
                 label: 'Company Name',
                 value: widget.lead.companyName!,
               ),
             if (widget.lead.address != null)
-              _infoCard(
+              _buildInfoCard(
                 icon: Icons.location_on,
                 label: 'Address',
                 value: widget.lead.address!,
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.map, color: Colors.blue),
+                    onPressed: () => _openMap(widget.lead.address!),
+                  ),
+                ],
               ),
             const SizedBox(height: 16),
-            const Text(
-              'Lead Details',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-                color: Colors.blue,
-              ),
+            TitleWidget(
+              val: 'Lead Details',
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: Colors.blue,
             ),
             const SizedBox(height: 10),
-            _infoCard(
+            _buildInfoCard(
               icon: Icons.label,
               label: 'Status',
               value: widget.lead.status.toString().split('.').last,
             ),
-            _infoCard(
+            _buildInfoCard(
               icon: Icons.local_offer,
               label: 'Tag',
               value: widget.lead.tag.toString().split('.').last,
             ),
-            _infoCard(
+            _buildInfoCard(
               icon: Icons.source,
               label: 'Source',
               value: widget.lead.source.toString().split('.').last,
             ),
-            _infoCard(
+            _buildInfoCard(
               icon: Icons.score,
               label: 'Lead Score',
               value: widget.lead.leadScore.toString(),
             ),
             if (widget.lead.followUpDate != null)
-              _infoCard(
+              _buildInfoCard(
                 icon: Icons.calendar_today,
                 label: 'Follow-up Date',
                 value: _formatDate(widget.lead.followUpDate!),
@@ -270,7 +307,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
     );
   }
 
-  Widget _infoCard({
+  Widget _buildInfoCard({
     required IconData icon,
     required String label,
     required String value,
@@ -291,15 +328,16 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    label,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
+                  TitleWidget(
+                    val: label,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
                   ),
                   const SizedBox(height: 2),
-                  Text(value, style: const TextStyle(fontSize: 15)),
+                  TitleWidget(
+                    val: value,
+                    fontSize: 15,
+                  ),
                 ],
               ),
             ),
@@ -319,13 +357,11 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-            child: Text(
-              "Today's Activity",
-              style: TextStyle(
-                color: Colors.blue[700],
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+            child: TitleWidget(
+              val: "Today's Activity",
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.blue[700]!,
             ),
           ),
           Expanded(
@@ -333,7 +369,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
               padding: const EdgeInsets.all(16),
               itemCount: activities.length,
               itemBuilder: (context, index) {
-                final a = activities[index];
+                final activity = activities[index];
                 return Card(
                   color: AppColor.whiteColor,
                   margin: const EdgeInsets.only(bottom: 12),
@@ -346,7 +382,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
                         width: 6,
                         height: 70,
                         decoration: BoxDecoration(
-                          color: a.color,
+                          color: activity.color,
                           borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(12),
                             bottomLeft: Radius.circular(12),
@@ -354,32 +390,37 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
                         ),
                       ),
                       const SizedBox(width: 10),
-                      Icon(a.icon, color: a.color, size: 32),
+                      Icon(activity.icon, color: activity.color, size: 32),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              a.type,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: a.color,
-                                fontSize: 16,
-                              ),
+                            TitleWidget(
+                              val: activity.type,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: activity.color,
                             ),
-                            Text(a.desc, style: const TextStyle(fontSize: 14)),
+                            TitleWidget(
+                              val: activity.desc,
+                              fontSize: 14,
+                            ),
                           ],
                         ),
                       ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          const Text(
-                            'End:-',
-                            style: TextStyle(fontSize: 11, color: Colors.grey),
+                          TitleWidget(
+                            val: 'End:-',
+                            fontSize: 11,
+                            color: Colors.grey,
                           ),
-                          Text(a.date, style: const TextStyle(fontSize: 13)),
+                          TitleWidget(
+                            val: activity.date,
+                            fontSize: 13,
+                          ),
                         ],
                       ),
                       const SizedBox(width: 12),
@@ -403,13 +444,11 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Completed Activity & Notes',
-              style: TextStyle(
-                color: Colors.blue[700],
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+            TitleWidget(
+              val: 'Completed Activity & Notes',
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.blue[700]!,
             ),
             const SizedBox(height: 12),
             Expanded(
@@ -439,18 +478,17 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
                                     color: Colors.blue[100],
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: Text(
-                                    day,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.blue,
-                                    ),
+                                  child: TitleWidget(
+                                    val: day,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.blue,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
-                                Text(
-                                  month,
-                                  style: const TextStyle(fontSize: 11),
+                                TitleWidget(
+                                  val: month,
+                                  fontSize: 11,
                                 ),
                               ],
                             ),
@@ -481,17 +519,18 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     const SizedBox(),
-                                    Text(
-                                      note.date,
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        color: Colors.grey,
-                                      ),
+                                    TitleWidget(
+                                      val: note.date,
+                                      fontSize: 13,
+                                      color: Colors.grey,
                                     ),
                                   ],
                                 ),
                                 const SizedBox(height: 4),
-                                Text(note.desc),
+                                TitleWidget(
+                                  val: note.desc,
+                                  fontSize: 14,
+                                ),
                               ],
                             ),
                           ),
@@ -517,13 +556,11 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Call-Recording',
-              style: TextStyle(
-                color: Colors.blue[700],
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+            TitleWidget(
+              val: 'Call-Recording',
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.blue[700]!,
             ),
             const SizedBox(height: 12),
             Expanded(
@@ -545,12 +582,10 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                '${log.type} Call to ${log.name}',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                ),
+                              TitleWidget(
+                                val: '${log.type} Call to ${log.name}',
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
                               ),
                               if (log.recording == true)
                                 IconButton(
@@ -559,20 +594,18 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
                                     color: Colors.blue,
                                     size: 32,
                                   ),
-                                  onPressed: () {},
+                                  onPressed: () => _playRecording(log),
                                 ),
                             ],
                           ),
-                          Text(
-                            log.datetime,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey,
-                            ),
+                          TitleWidget(
+                            val: log.datetime,
+                            fontSize: 13,
+                            color: Colors.grey,
                           ),
-                          Text(
-                            'Duration: ${log.duration}',
-                            style: const TextStyle(fontSize: 13),
+                          TitleWidget(
+                            val: 'Duration: ${log.duration}',
+                            fontSize: 13,
                           ),
                         ],
                       ),
@@ -625,5 +658,26 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
       'DEC',
     ];
     return months[month];
+  }
+
+  // Action handlers
+  void _makePhoneCall(String phone) {
+    // TODO: Implement phone call functionality
+  }
+
+  void _sendMessage(String phone) {
+    // TODO: Implement message functionality
+  }
+
+  void _sendEmail(String email) {
+    // TODO: Implement email functionality
+  }
+
+  void _openMap(String address) {
+    // TODO: Implement map functionality
+  }
+
+  void _playRecording(dynamic log) {
+    // TODO: Implement recording playback
   }
 }

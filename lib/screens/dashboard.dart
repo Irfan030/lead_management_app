@@ -130,7 +130,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       case 'Invoices':
         return const InvoicesScreen();
       case 'Activity':
-        return ActivityScreen();
+        return const ActivityScreen();
       case 'Reports':
         return const ReportsScreen();
       case 'Attendance':

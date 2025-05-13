@@ -4,6 +4,12 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:leads_management_app/models/lead_model.dart';
 import 'package:leads_management_app/theme/colors.dart';
 import 'package:leads_management_app/widgets/appbar.dart';
+import 'package:leads_management_app/widgets/default_drop_down.dart';
+import 'package:leads_management_app/widgets/default_text_input.dart';
+import 'package:leads_management_app/widgets/date_time_picker_field.dart';
+import 'package:leads_management_app/widgets/text_button.dart';
+import 'package:leads_management_app/widgets/title_widget.dart';
+import 'package:leads_management_app/widgets/loader.dart';
 import 'package:location/location.dart';
 
 class CreateLeadScreen extends StatefulWidget {
@@ -25,6 +31,7 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
   final Location _location = Location();
   LatLng? _selectedLocation;
   String? _address;
+  bool _isLoading = false;
   bool _isLoadingLocation = false;
 
   String? _stage;
@@ -111,318 +118,225 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-          title: widget.lead == null ? 'Create New Lead' : 'Edit Lead'),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildSectionTitle('Basic Information'),
-              _buildTextField(
-                controller: _nameController,
-                label: 'Name',
-                icon: Icons.person,
-                isRequired: true,
-              ),
-              _buildTextField(
-                controller: _phoneController,
-                label: 'Phone',
-                icon: Icons.phone,
-                isRequired: true,
-                keyboardType: TextInputType.phone,
-              ),
-              _buildTextField(
-                controller: _emailController,
-                label: 'Email',
-                icon: Icons.email,
-                isRequired: true,
-                keyboardType: TextInputType.emailAddress,
-              ),
-              _buildTextField(
-                controller: _companyNameController,
-                label: 'Company Name',
-                icon: Icons.business,
-              ),
-              _buildTextField(
-                controller: _addressController,
-                label: 'Address',
-                icon: Icons.location_on,
-              ),
-              const SizedBox(height: 16),
-              _buildSectionTitle('Lead Details'),
-              _buildDropdown(
-                label: 'Stage',
-                items: const [
-                  'New',
-                  'Contacted',
-                  'Qualified',
-                  'Proposal',
-                  'Negotiation',
-                  'Closed Won',
-                  'Closed Lost'
-                ],
-                value: _stage,
-                onChanged: (value) => setState(() => _stage = value),
-              ),
-              _buildDropdown(
-                label: 'Status',
-                items: LeadStatus.values
-                    .map((e) => e.toString().split('.').last)
-                    .toList(),
-                value: _status?.toString().split('.').last,
-                onChanged: (value) => setState(() {
-                  _status = LeadStatus.values.firstWhere(
-                    (e) => e.toString().split('.').last == value,
-                  );
-                }),
-              ),
-              _buildDropdown(
-                label: 'Tag',
-                items: LeadTag.values
-                    .map((e) => e.toString().split('.').last)
-                    .toList(),
-                value: _tag?.toString().split('.').last,
-                onChanged: (value) => setState(() {
-                  _tag = LeadTag.values.firstWhere(
-                    (e) => e.toString().split('.').last == value,
-                  );
-                }),
-              ),
-              _buildDropdown(
-                label: 'Source',
-                items: LeadSource.values
-                    .map((e) => e.toString().split('.').last)
-                    .toList(),
-                value: _source?.toString().split('.').last,
-                onChanged: (value) => setState(() {
-                  _source = LeadSource.values.firstWhere(
-                    (e) => e.toString().split('.').last == value,
-                  );
-                }),
-              ),
-              const SizedBox(height: 16),
-              _buildSectionTitle('Dates'),
-              _buildDateField(
-                label: 'Date',
-                date: _date,
-                onDateSelected: (date) => setState(() => _date = date),
-              ),
-              _buildDateField(
-                label: 'Follow-up Date',
-                date: _followUpDate,
-                onDateSelected: (date) => setState(() => _followUpDate = date),
-                isOptional: true,
-              ),
-              const SizedBox(height: 16),
-              _buildSectionTitle('Location'),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _addressController,
-                      decoration: InputDecoration(
-                        labelText: 'Address',
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                        suffixIcon: IconButton(
-                          icon: const Icon(Icons.location_on),
-                          onPressed:
-                              _isLoadingLocation ? null : _getCurrentLocation,
-                        ),
-                      ),
-                      readOnly: true,
-                      onTap: _selectLocationOnMap,
-                    ),
-                  ),
-                ],
-              ),
-              if (_isLoadingLocation)
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-              const SizedBox(height: 16),
-              _buildSectionTitle('Additional Information'),
-              _buildTextField(
-                controller: _notesController,
-                label: 'Notes',
-                icon: Icons.note,
-                maxLines: 3,
-              ),
-              _buildSlider(
-                label: 'Lead Score',
-                value: _leadScore,
-                onChanged: (value) =>
-                    setState(() => _leadScore = value.toInt()),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _createLead,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColor.mainColor,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: const Text(
-                    'Create Lead',
-                    style: TextStyle(fontSize: 16, color: Colors.white),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+        title: widget.lead == null ? 'Create New Lead' : 'Edit Lead',
       ),
+      body: _isLoading
+          ? const Loader()
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSectionTitle('Basic Information'),
+                    DefaultTextInput(
+                      controller: _nameController,
+                      label: 'Name',
+                      hint: 'Enter name',
+                      prefixIcon: const Icon(Icons.person, color: AppColor.secondaryColor),
+                      onChange: (value) {},
+                      validator: true,
+                      errorMsg: 'Name is required',
+                    ),
+                    const SizedBox(height: 12),
+                    DefaultTextInput(
+                      controller: _phoneController,
+                      label: 'Phone',
+                      hint: 'Enter phone number',
+                      prefixIcon: const Icon(Icons.phone, color: AppColor.secondaryColor),
+                      onChange: (value) {},
+                      validator: true,
+                      errorMsg: 'Phone is required',
+                      keyboardType: TextInputType.phone,
+                    ),
+                    const SizedBox(height: 12),
+                    DefaultTextInput(
+                      controller: _emailController,
+                      label: 'Email',
+                      hint: 'Enter email',
+                      prefixIcon: const Icon(Icons.email, color: AppColor.secondaryColor),
+                      onChange: (value) {},
+                      validator: true,
+                      errorMsg: 'Email is required',
+                      keyboardType: TextInputType.emailAddress,
+                    ),
+                    const SizedBox(height: 12),
+                    DefaultTextInput(
+                      controller: _companyNameController,
+                      label: 'Company Name',
+                      hint: 'Enter company name',
+                      prefixIcon: const Icon(Icons.business, color: AppColor.secondaryColor),
+                      onChange: (value) {},
+                    ),
+                    const SizedBox(height: 12),
+                    DefaultTextInput(
+                      controller: _addressController,
+                      label: 'Address',
+                      hint: 'Enter address',
+                      prefixIcon: const Icon(Icons.location_on, color: AppColor.secondaryColor),
+                      onChange: (value) {},
+                      readOnly: true,
+                      onSubmitted: (_) => _selectLocationOnMap(),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildSectionTitle('Lead Details'),
+                    DefaultDropDown<String>(
+                      label: 'Stage',
+                      hint: 'Select stage',
+                      value: _stage ?? '',
+                      listValues: const [
+                        'New',
+                        'Contacted',
+                        'Qualified',
+                        'Proposal',
+                        'Negotiation',
+                        'Won',
+                        'Lost'
+                      ],
+                      onChange: (value) => setState(() => _stage = value),
+                      getDisplayText: (value) => value,
+                      getValue: (value) => value,
+                    ),
+                    const SizedBox(height: 12),
+                    DefaultDropDown<String>(
+                      label: 'Status',
+                      hint: 'Select status',
+                      value: _status?.toString().split('.').last ?? '',
+                      listValues: LeadStatus.values
+                          .map((e) => e.toString().split('.').last)
+                          .toSet()
+                          .toList(),
+                      onChange: (value) {
+                        if (value != null && value.isNotEmpty) {
+                          setState(() {
+                            _status = LeadStatus.values.firstWhere(
+                              (e) => e.toString().split('.').last == value,
+                              orElse: () => LeadStatus.values.first,
+                            );
+                          });
+                        }
+                      },
+                      getDisplayText: (value) => value,
+                      getValue: (value) => value,
+                    ),
+                    const SizedBox(height: 12),
+                    DefaultDropDown<String>(
+                      label: 'Tag',
+                      hint: 'Select tag',
+                      value: _tag?.toString().split('.').last ?? '',
+                      listValues: LeadTag.values
+                          .map((e) => e.toString().split('.').last)
+                          .toSet()
+                          .toList(),
+                      onChange: (value) {
+                        if (value != null && value.isNotEmpty) {
+                          setState(() {
+                            _tag = LeadTag.values.firstWhere(
+                              (e) => e.toString().split('.').last == value,
+                              orElse: () => LeadTag.values.first,
+                            );
+                          });
+                        }
+                      },
+                      getDisplayText: (value) => value,
+                      getValue: (value) => value,
+                    ),
+                    const SizedBox(height: 12),
+                    DefaultDropDown<String>(
+                      label: 'Source',
+                      hint: 'Select source',
+                      value: _source?.toString().split('.').last ?? '',
+                      listValues: LeadSource.values
+                          .map((e) => e.toString().split('.').last)
+                          .toSet()
+                          .toList(),
+                      onChange: (value) {
+                        if (value != null && value.isNotEmpty) {
+                          setState(() {
+                            _source = LeadSource.values.firstWhere(
+                              (e) => e.toString().split('.').last == value,
+                              orElse: () => LeadSource.values.first,
+                            );
+                          });
+                        }
+                      },
+                      getDisplayText: (value) => value,
+                      getValue: (value) => value,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildSectionTitle('Dates'),
+                    if (_date != null)
+                      DateTimePickerField(
+                        date: _date!,
+                        time: TimeOfDay.now(),
+                        label: 'Date',
+                        isDate: true,
+                        onDateChanged: (date) => setState(() => _date = date),
+                        onTimeChanged: (_) {},
+                      ),
+                    const SizedBox(height: 12),
+                    if (_followUpDate != null)
+                      DateTimePickerField(
+                        date: _followUpDate!,
+                        time: TimeOfDay.now(),
+                        label: 'Follow-up Date',
+                        isDate: true,
+                        onDateChanged: (date) => setState(() => _followUpDate = date),
+                        onTimeChanged: (_) {},
+                      ),
+                    const SizedBox(height: 16),
+                    _buildSectionTitle('Additional Information'),
+                    DefaultTextInput(
+                      controller: _notesController,
+                      label: 'Notes',
+                      hint: 'Enter notes',
+                      prefixIcon: const Icon(Icons.note, color: AppColor.secondaryColor),
+                      onChange: (value) {},
+                      maxlineHeight: 3,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildLeadScoreSlider(),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: TextButtonWidget(
+                        text: widget.lead == null ? 'Create Lead' : 'Update Lead',
+                        textColor: Colors.white,
+                        backgroundColor: AppColor.mainColor,
+                        fontSize: 16,
+                        height: 50,
+                        borderRadius: 10,
+                        onPressed: _createLead,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
     );
   }
 
   Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: AppColor.secondaryColor,
-        ),
+      child: TitleWidget(
+        val: title,
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+        color: AppColor.secondaryColor,
       ),
     );
   }
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    bool isRequired = false,
-    TextInputType keyboardType = TextInputType.text,
-    int maxLines = 1,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: TextFormField(
-        controller: controller,
-        keyboardType: keyboardType,
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: Icon(icon, color: AppColor.secondaryColor),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-          focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: AppColor.secondaryColor),
-            borderRadius: BorderRadius.circular(8),
-          ),
-        ),
-        maxLines: maxLines,
-        validator: (value) {
-          if (isRequired && (value == null || value.trim().isEmpty)) {
-            return '$label is required';
-          }
-          if (label == 'Email' && value != null && value.trim().isNotEmpty) {
-            final emailRegex = RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$');
-            if (!emailRegex.hasMatch(value.trim())) {
-              return 'Enter a valid email address';
-            }
-          }
-          if (label == 'Phone' && value != null && value.trim().isNotEmpty) {
-            final phone = value.trim();
-            if (!RegExp(r'^\d{10}$').hasMatch(phone)) {
-              return 'Phone must be 10 digits';
-            }
-          }
-          return null;
-        },
-      ),
-    );
-  }
-
-  Widget _buildDropdown({
-    required String label,
-    required List<String> items,
-    required String? value,
-    required Function(String?) onChanged,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: DropdownButtonFormField<String>(
-        value: value,
-        decoration: InputDecoration(
-          labelText: label,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-          focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: AppColor.secondaryColor),
-            borderRadius: BorderRadius.circular(8),
-          ),
-        ),
-        icon: const Icon(Icons.arrow_drop_down, color: AppColor.secondaryColor),
-        items: items.map((item) {
-          return DropdownMenuItem(value: item, child: Text(item));
-        }).toList(),
-        onChanged: onChanged,
-      ),
-    );
-  }
-
-  Widget _buildDateField({
-    required String label,
-    required DateTime? date,
-    required Function(DateTime) onDateSelected,
-    bool isOptional = false,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
-        onTap: () async {
-          final picked = await showDatePicker(
-            context: context,
-            initialDate: date ?? DateTime.now(),
-            firstDate: DateTime(2020),
-            lastDate: DateTime(2100),
-          );
-          if (picked != null) onDateSelected(picked);
-        },
-        child: InputDecorator(
-          decoration: InputDecoration(
-            labelText: label,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            focusedBorder: OutlineInputBorder(
-              borderSide: const BorderSide(color: AppColor.secondaryColor),
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                date != null ? _formatDate(date) : 'Select date',
-                style: TextStyle(
-                  color: date != null ? Colors.black : Colors.grey,
-                ),
-              ),
-              const Icon(Icons.calendar_today, color: AppColor.secondaryColor),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSlider({
-    required String label,
-    required int value,
-    required Function(double) onChanged,
-  }) {
+  Widget _buildLeadScoreSlider() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '$label: $value',
-          style: const TextStyle(color: AppColor.secondaryColor),
+        TitleWidget(
+          val: 'Lead Score: $_leadScore',
+          fontSize: 14,
+          color: AppColor.secondaryColor,
         ),
         const SizedBox(height: 8),
         Row(
@@ -434,7 +348,7 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
                   final double width = box.size.width;
                   final double dx = details.localPosition.dx;
                   final double newValue = (dx / width) * 100;
-                  onChanged(newValue.clamp(0.0, 100.0));
+                  setState(() => _leadScore = newValue.clamp(0.0, 100.0).toInt());
                 },
                 child: Container(
                   height: 4,
@@ -445,17 +359,14 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
                   child: Stack(
                     children: [
                       Container(
-                        width:
-                            (value / 100) * MediaQuery.of(context).size.width,
+                        width: (_leadScore / 100) * MediaQuery.of(context).size.width,
                         decoration: BoxDecoration(
                           color: AppColor.secondaryColor,
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
                       Positioned(
-                        left:
-                            (value / 100) * MediaQuery.of(context).size.width -
-                                8,
+                        left: (_leadScore / 100) * MediaQuery.of(context).size.width - 8,
                         child: Container(
                           width: 16,
                           height: 16,
@@ -478,35 +389,100 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
 
   void _createLead() {
     if (_formKey.currentState!.validate()) {
-      final newLead = Lead(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        name: _nameController.text.trim(),
-        phone: _phoneController.text.trim(),
-        email: _emailController.text.trim(),
-        companyName: _companyNameController.text.trim(),
-        address: _addressController.text.trim(),
-        stage: _stage,
-        date: _date,
-        status: _status,
-        tag: _tag,
-        source: _source,
-        notes: _notesController.text.trim().isNotEmpty
-            ? [_notesController.text.trim()]
-            : [],
-        followUpDate: _followUpDate,
-        leadScore: _leadScore,
-        activities: _activities,
-        notesList: _notesList,
-        callLogs: _callLogs,
-        latitude: _selectedLocation?.latitude,
-        longitude: _selectedLocation?.longitude,
-      );
-      Navigator.pop(context, newLead);
-    }
-  }
+      // Validate required fields
+      if (_nameController.text.trim().isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Name is required'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+      if (_phoneController.text.trim().isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Phone number is required'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+      if (_emailController.text.trim().isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Email is required'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+      if (_stage == null || _stage!.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Stage is required'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
 
-  String _formatDate(DateTime date) {
-    return '${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}';
+      setState(() => _isLoading = true);
+      try {
+        final newLead = Lead(
+          id: widget.lead?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+          name: _nameController.text.trim(),
+          phone: _phoneController.text.trim(),
+          email: _emailController.text.trim(),
+          companyName: _companyNameController.text.trim(),
+          address: _addressController.text.trim(),
+          stage: _stage,
+          date: _date ?? DateTime.now(),
+          status: _status ?? LeadStatus.newLead,
+          tag: _tag ?? LeadTag.cold,
+          source: _source ?? LeadSource.other,
+          notes: _notesController.text.trim().isNotEmpty
+              ? [_notesController.text.trim()]
+              : [],
+          followUpDate: _followUpDate,
+          leadScore: _leadScore,
+          activities: _activities,
+          notesList: _notesList,
+          callLogs: _callLogs,
+          latitude: _selectedLocation?.latitude,
+          longitude: _selectedLocation?.longitude,
+        );
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(widget.lead == null ? 'Lead created successfully' : 'Lead updated successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Return the new/updated lead
+        Navigator.pop(context, newLead);
+      } catch (e) {
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } finally {
+        setState(() => _isLoading = false);
+      }
+    } else {
+      // Show validation error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill in all required fields'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }
 

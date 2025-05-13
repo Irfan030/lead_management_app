@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:leads_management_app/constant.dart';
 import 'package:leads_management_app/screens/activity/activity_model.dart';
 import 'package:leads_management_app/theme/colors.dart';
 
@@ -33,7 +34,7 @@ class ActivityCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: activity.color.withOpacity(0.1),
+                      color: activity.color.withAlphaDouble(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
@@ -71,8 +72,8 @@ class ActivityCard extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: activity.isCompleted
-                          ? Colors.green.withOpacity(0.1)
-                          : Colors.orange.withOpacity(0.1),
+                          ? Colors.green.withAlphaDouble(0.1)
+                          : Colors.orange.withAlphaDouble(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(

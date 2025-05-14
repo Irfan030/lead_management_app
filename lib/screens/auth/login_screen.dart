@@ -1,12 +1,18 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:leads_management_app/Repository/AuthRepository.dart';
 import 'package:leads_management_app/constant.dart';
-import 'package:leads_management_app/route/route_path.dart';
+import 'package:leads_management_app/screens/auth/sharedPreference.dart';
+import 'package:leads_management_app/screens/auth/splash_screen.dart';
 import 'package:leads_management_app/theme/colors.dart';
-import 'package:leads_management_app/theme/size_config.dart';
-import 'package:leads_management_app/widgets/default_text_input.dart';
 import 'package:leads_management_app/widgets/loader.dart';
-import 'package:leads_management_app/widgets/text_button.dart';
-import 'package:leads_management_app/widgets/title_widget.dart';
+
+import '../../route/route_path.dart';
+import '../../theme/size_config.dart';
+import '../../widgets/default_text_input.dart';
+import '../../widgets/text_button.dart';
+import '../../widgets/title_widget.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -21,6 +27,9 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  String email = "admin", password = "admin";
+  bool loader = false;
+  Authrepository authrepository = Authrepository();
 
   @override
   void dispose() {
@@ -29,27 +38,46 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  @override
+  void initState() {
+    super.initState();
+    _emailController.text = email;
+    _passwordController.text = password;
+  }
+
   void _handleLogin() async {
     setState(() {
       _isLoading = true;
     });
-
+    var response;
     try {
-      await Future.delayed(const Duration(seconds: 2));
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, RoutePath.dashboard);
+      var params = {
+        "email": email,
+        "password": password,
+        "db": AppData.dbName,
+      };
+      response = await authrepository.login(params);
+      if (response["statusCode"] == 200 &&
+          response['body']["Status"] == "auth successful") {
+        await SharedPreference.addStringToSF(
+            AppData.session, response['body']['api-key'] ?? '');
+        await SharedPreference.addStringToSF(
+            AppData.userDetials, jsonEncode(response['body']));
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, RoutePath.dashboard);
+        }
+      } else {
+        AppData.handleHtmlResponse(context, response.toString());
+        return;
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: TitleWidget(
-              val: "Login failed. Please try again.",
-              color: AppColor.whiteColor,
-            ),
-            backgroundColor: AppColor.errorColor,
-          ),
+        AppData.showSnackBar(
+          context,
+          "Unexpected error: ${e.toString()}",
+          backgroundColor: AppColor.errorColor,
         );
+        return;
       }
     } finally {
       if (mounted) {
@@ -77,7 +105,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      color: AppColor.mainColor.withAlphaDouble(0.1),
+                      color: ColorAlphaExtension(AppColor.mainColor)
+                          .withAlphaDouble(0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Icon(
@@ -108,7 +137,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   label: "Email",
                   keyboardType: TextInputType.emailAddress,
                   controller: _emailController,
-                  onChange: (value) {},
+                  onChange: (value) {
+                    setState(() {
+                      email = value;
+                    });
+                  },
+                  value: email,
                   validator: true,
                   errorMsg: "Please enter a valid email",
                 ),
@@ -118,7 +152,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   label: "Password",
                   obscureText: _obscurePassword,
                   controller: _passwordController,
-                  onChange: (value) {},
+                  onChange: (value) {
+                    setState(() {
+                      password = value;
+                    });
+                  },
+                  value: password,
                   validator: true,
                   errorMsg: "Please enter your password",
                   suffixIcon: IconButton(

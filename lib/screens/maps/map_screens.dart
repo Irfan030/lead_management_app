@@ -244,7 +244,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
     setState(() {
       _leads = [
         Lead(
-          id: '1',
+          id: 1,
           name: 'ABC Corporation',
           companyName: 'ABC Corp',
           stage: 'New',
@@ -257,7 +257,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
           callLogs: [],
         ),
         Lead(
-          id: '2',
+          id: 2,
           name: 'XYZ Industries',
           companyName: 'XYZ Ltd',
           stage: 'Qualified',
@@ -270,7 +270,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
           callLogs: [],
         ),
         Lead(
-          id: '3',
+          id: 3,
           name: 'Tech Solutions',
           companyName: 'TechSol',
           stage: 'Proposal',
@@ -283,7 +283,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
           callLogs: [],
         ),
         Lead(
-          id: '4',
+          id: 4,
           name: 'Global Enterprises',
           companyName: 'Global Inc',
           stage: 'Negotiation',
@@ -296,7 +296,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
           callLogs: [],
         ),
         Lead(
-          id: '5',
+          id: 5,
           name: 'Digital Innovations',
           companyName: 'DigiTech',
           stage: 'Closed',
@@ -309,7 +309,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
           callLogs: [],
         ),
         Lead(
-          id: '6',
+          id: 6,
           name: 'Future Systems',
           companyName: 'FutureSys',
           stage: 'New',
@@ -322,7 +322,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
           callLogs: [],
         ),
         Lead(
-          id: '7',
+          id: 7,
           name: 'Smart Solutions',
           companyName: 'SmartSol',
           stage: 'Contacted',
@@ -335,7 +335,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
           callLogs: [],
         ),
         Lead(
-          id: '8',
+          id: 8,
           name: 'Innovative Tech',
           companyName: 'InnoTech',
           stage: 'Qualified',
@@ -348,7 +348,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
           callLogs: [],
         ),
         Lead(
-          id: '9',
+          id: 9,
           name: 'NextGen Systems',
           companyName: 'NextGen',
           stage: 'Proposal',
@@ -361,7 +361,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
           callLogs: [],
         ),
         Lead(
-          id: '10',
+          id: 10,
           name: 'Elite Solutions',
           companyName: 'EliteSol',
           stage: 'Negotiation',
@@ -515,19 +515,19 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
                               const Icon(Icons.phone, color: Colors.blue),
                               const SizedBox(width: 8),
                               Text(
-                                lead.phone,
+                                lead.phone!,
                                 style: const TextStyle(fontSize: 16),
                               ),
                             ],
                           ),
-                          if (lead.email != null) ...[
+                          if (lead.email_from != null) ...[
                             const SizedBox(height: 12),
                             Row(
                               children: [
                                 const Icon(Icons.email, color: Colors.orange),
                                 const SizedBox(width: 8),
                                 Text(
-                                  lead.email!,
+                                  lead.email_from!,
                                   style: const TextStyle(fontSize: 16),
                                 ),
                               ],

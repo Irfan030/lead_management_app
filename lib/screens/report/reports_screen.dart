@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:leads_management_app/constant.dart';
+import 'package:leads_management_app/screens/auth/splash_screen.dart';
 import 'package:leads_management_app/theme/colors.dart';
 import 'package:leads_management_app/widgets/default_drop_down.dart';
 import 'package:leads_management_app/widgets/title_widget.dart';
@@ -127,7 +128,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   Widget _buildSummaryCard(String label, int value, Color color) {
     return Expanded(
       child: Card(
-        color: color.withAlphaDouble(0.2),
+        color: ColorAlphaExtension(color).withAlphaDouble(0.2),
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(

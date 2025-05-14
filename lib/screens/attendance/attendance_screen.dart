@@ -217,7 +217,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Widget _buildCheckInOutButton(AttendanceProvider provider) {
     return SizedBox(
       width: double.infinity,
-      height: getProportionateScreenHeight(50),
+      height: getProportionateScreenHeight(56),
       child: TextButtonWithIcon(
         text: provider.isCheckedIn ? 'CHECK OUT' : 'CHECK IN',
         onPressed: () => provider.handleAttendance(context),

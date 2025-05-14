@@ -5,6 +5,7 @@ import 'package:leads_management_app/screens/quotation/quotation_order_screen.da
 import 'package:leads_management_app/screens/report/reports_screen.dart';
 import 'package:leads_management_app/theme/colors.dart';
 import 'package:leads_management_app/widgets/loader.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:leads_management_app/widgets/text_button.dart';
 import 'package:leads_management_app/widgets/title_widget.dart';
 
@@ -342,8 +343,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           TextButtonWidget(
             text: 'Logout',
-            onPressed: () {
+            onPressed: () async {
               Navigator.of(context).pop();
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              await prefs.clear();
               // Add your logout logic here
               Navigator.of(context).pushReplacementNamed('/login');
             },

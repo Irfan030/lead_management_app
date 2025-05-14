@@ -7,8 +7,10 @@ import 'package:leads_management_app/route/route_path.dart';
 import 'package:leads_management_app/theme/colors.dart';
 import 'package:leads_management_app/theme/size_config.dart';
 import 'package:provider/provider.dart';
+import 'package:leads_management_app/providers/attendance_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Set the status bar color and brightness
@@ -21,6 +23,7 @@ void main() {
       systemNavigationBarIconBrightness: Brightness.dark,
     ),
   );
+  await SharedPreferences.getInstance();
 
   runApp(const MyApp());
 }

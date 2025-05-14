@@ -13,7 +13,12 @@ class Activity {
   final IconData icon;
   final Color color;
 
-  Activity({required this.type, required this.desc, required this.date, required this.icon, required this.color});
+  Activity(
+      {required this.type,
+      required this.desc,
+      required this.date,
+      required this.icon,
+      required this.color});
 }
 
 class Note {
@@ -30,16 +35,21 @@ class CallLog {
   final String duration;
   final bool recording;
 
-  CallLog({required this.type, required this.name, required this.datetime, required this.duration, required this.recording});
+  CallLog(
+      {required this.type,
+      required this.name,
+      required this.datetime,
+      required this.duration,
+      required this.recording});
 }
 
 class Lead {
-  final String id;
+  final int? id;
   final String name;
   final String? address;
-  final String phone;
+  final String? phone;
   final String? companyName;
-  final String? email;
+  final String? email_from;
   final String? imageUrl;
   final String? stage;
   final DateTime? date;
@@ -56,11 +66,11 @@ class Lead {
   final double? longitude;
 
   Lead({
-    required this.id,
+    this.id,
     required this.name,
     this.address,
     required this.phone,
-    this.email,
+    this.email_from,
     this.companyName,
     this.imageUrl,
     this.stage,
@@ -77,4 +87,25 @@ class Lead {
     this.latitude,
     this.longitude,
   });
+  factory Lead.fromJson(Map<String, dynamic> json) {
+    return Lead(
+      id: json['id'],
+      name: json['name'],
+      phone: json['phone'],
+      email_from: json['email_from'] is String ? json['email_from'] : null,
+    );
+  }
+  Map<String, dynamic> toJson() {
+    return {
+      // 'id': id,
+      'name': name,
+      'phone': phone,
+      'email_from': email_from,
+    };
+  }
+
+  // @override
+  // String toString() {
+  //   return 'Lead(id: $id, name: $name, phone: $phone, email: $email)';
+  // }
 }

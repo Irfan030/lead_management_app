@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:leads_management_app/constant.dart';
-import 'package:leads_management_app/route/route_path.dart';
+import 'package:leads_management_app/screens/auth/sharedPreference.dart';
 import 'package:leads_management_app/theme/colors.dart';
-import 'package:leads_management_app/widgets/title_widget.dart';
+
+import '../../route/route_path.dart';
+import '../../widgets/title_widget.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -31,11 +33,12 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller!.forward();
 
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, RoutePath.login);
-      }
-    });
+    // Future.delayed(const Duration(seconds: 3), () {
+    //   if (mounted) {
+    //     Navigator.pushReplacementNamed(context, RoutePath.login);
+    //   }
+    // });
+    _checkAuth();
   }
 
   @override
@@ -78,12 +81,35 @@ class _SplashScreenState extends State<SplashScreen>
               TitleWidget(
                 val: "Manage your leads efficiently",
                 fontSize: 16,
-                color: Colors.white.withAlphaDouble(0.8),
+                color: ColorAlphaExtension(Colors.white).withAlphaDouble(0.8),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _checkAuth() async {
+    await Future.delayed(const Duration(seconds: 2)); // Simulate loading
+    var session = await SharedPreference.getStringValue(AppData.session);
+    var userId = await SharedPreference.getStringValue(AppData.userDetials);
+    if (session != null &&
+        session != "" &&
+        session.isNotEmpty &&
+        userId != null &&
+        userId != "" &&
+        userId.isNotEmpty) {
+      Navigator.pushReplacementNamed(context, RoutePath.dashboard);
+    } else {
+      Navigator.pushReplacementNamed(context, RoutePath.login);
+    }
+  }
+}
+
+extension ColorAlphaExtension on Color {
+  Color withAlphaDouble(double value) {
+    assert(value >= 0.0 && value <= 1.0, 'Alpha must be between 0.0 and 1.0');
+    return withAlpha((value * 255).round());
   }
 }

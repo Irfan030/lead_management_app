@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:html/parser.dart' as html_parser;
+import 'package:leads_management_app/theme/colors.dart';
 
 class AppData {
   static String appName = "Leads Manager";
+  static String domainname = "gomotires.com";
+  static String platform = "mobile";
+  static String apiBaseUrl = "http://95.216.18.133:8076";
+
+  // static String apiBaseUrl = "https://gomobile.firebridge.co.za/";
+
   static const profile = "assets/images/user.jpg";
   static String poppinsRegular = "PoppinsRegular";
   static String poppinsSemiBold = "PoppinsSemiBold";
@@ -10,10 +18,20 @@ class AppData {
   static String poppinsBold = "PoppinsBold";
   static String poppinsLight = "PoppinsLight";
 
-  static String imageBaseUrl = " ";
+  static String imageBaseUrl = apiBaseUrl;
 
-  static showSnackBar(BuildContext context, String message) {
-    final snackBar = SnackBar(content: Text(message));
+  static String dbName = "firebridge_crm_v17";
+  static String session = "session";
+  static String userId = "userId";
+  static String userDetials = "userDetials";
+  static String role = "role";
+  static String firstName = "firstName";
+  static String lastName = "lastName";
+
+  static showSnackBar(BuildContext context, String message,
+      {Color backgroundColor = Colors.green}) {
+    final snackBar =
+        SnackBar(content: Text(message), backgroundColor: backgroundColor);
 
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
@@ -116,6 +134,23 @@ class AppData {
     return "";
   }
 
+  static bool zipCodeValidation(String val) {
+    final zipCodeRegex = RegExp(r'^\d{5}$');
+    if (!zipCodeRegex.hasMatch(val)) {
+      return true;
+    }
+    return false;
+  }
+
+  static String zipCodeErrorMsg(String val) {
+    if (val.isEmpty) {
+      return "ZIP code is required";
+    } else if (!RegExp(r'^\d{5}$').hasMatch(val)) {
+      return "Enter a valid 5-digit ZIP code";
+    }
+    return "";
+  }
+
   static descriptionValidation(String val) {
     if (val.isEmpty) {
       return true;
@@ -132,6 +167,22 @@ class AppData {
       return isMesssage ? "Invalid otp" : true;
     }
     return isMesssage ? "" : false;
+  }
+
+  static handleHtmlResponse(BuildContext context, String html) {
+    final document = html_parser.parse(html);
+    final h2Text = document.querySelector('h2')?.text;
+    final errorMessage = h2Text ?? "Something went wrong";
+    if (h2Text != null) {
+      showSnackBar(
+        context,
+        errorMessage,
+        backgroundColor: AppColor.errorColor,
+      );
+      return;
+
+      // Example: show a dialog in Flutter
+    }
   }
 }
 

@@ -115,7 +115,7 @@ class QuotationDetailsScreen extends StatelessWidget {
           const SizedBox(height: 12),
           if (quotation.lead != null) ...[
             _buildInfoRow("Customer", quotation.lead!.name),
-            _buildInfoRow("Email", quotation.lead!.email),
+            _buildInfoRow("Email", quotation.lead!.email_from),
             _buildInfoRow("Phone", quotation.lead!.phone),
           ],
           if (quotation.opportunity != null) ...[

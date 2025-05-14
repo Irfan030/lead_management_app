@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:leads_management_app/constant.dart';
 import 'package:leads_management_app/providers/attendance_provider.dart';
+import 'package:leads_management_app/screens/auth/splash_screen.dart';
 import 'package:leads_management_app/theme/colors.dart';
 import 'package:leads_management_app/theme/size_config.dart';
 import 'package:leads_management_app/widgets/appbar.dart';
@@ -26,7 +27,8 @@ class AttendanceHistoryScreen extends StatelessWidget {
                   Icon(
                     Icons.history,
                     size: getProportionateScreenWidth(64),
-                    color: Colors.grey.withAlphaDouble(0.5),
+                    color:
+                        ColorAlphaExtension(Colors.grey).withAlphaDouble(0.5),
                   ),
                   SizedBox(height: getProportionateScreenHeight(16)),
                   const TitleWidget(
@@ -84,8 +86,10 @@ class AttendanceHistoryScreen extends StatelessWidget {
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: record.lateness! > 0
-                          ? AppColor.errorColor.withAlphaDouble(0.1)
-                          : AppColor.successColor.withAlphaDouble(0.1),
+                          ? ColorAlphaExtension(AppColor.errorColor)
+                              .withAlphaDouble(0.1)
+                          : ColorAlphaExtension(AppColor.successColor)
+                              .withAlphaDouble(0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: TitleWidget(

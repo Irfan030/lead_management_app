@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:leads_management_app/Repository/Repository.dart';
 import 'package:leads_management_app/models/lead_model.dart';
 import 'package:leads_management_app/theme/colors.dart';
-import 'package:leads_management_app/utils/color_utils.dart';
 import 'package:leads_management_app/widgets/loader.dart';
 
 import 'create_lead_screen.dart';
@@ -25,6 +24,9 @@ class _LeadListScreenState extends State<LeadListScreen> {
   bool sortAscending = true;
   String searchQuery = '';
   bool isLoading = false;
+  String selectedTypeFilter = 'All';
+  String selectedPriorityFilter = 'All';
+
   @override
   void initState() {
     super.initState();
@@ -98,12 +100,52 @@ class _LeadListScreenState extends State<LeadListScreen> {
 
   void _searchLead(String query) {
     setState(() {
-      searchQuery = query;
+      searchQuery = query.toLowerCase();
       applyFilters();
     });
   }
 
-  void showStageFilterBottomSheet() {
+  String getPriorityLabel(String? priority) {
+    switch (priority) {
+      case '1':
+        return 'Low';
+      case '2':
+        return 'Medium';
+      case '3':
+        return 'High';
+      default:
+        return 'Low';
+    }
+  }
+
+  String getPriorityValue(String label) {
+    switch (label) {
+      case 'High':
+        return '3';
+      case 'Medium':
+        return '2';
+      case 'Low':
+        return '1';
+      default:
+        return '1';
+    }
+  }
+
+  Widget buildPriorityStars(String? priority) {
+    final count = int.tryParse(priority ?? '1') ?? 1;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(3, (index) {
+        return Icon(
+          index < count ? Icons.star : Icons.star_border,
+          color: Colors.amber,
+          size: 16,
+        );
+      }),
+    );
+  }
+
+  void showFilterBottomSheet() {
     showModalBottomSheet(
       backgroundColor: AppColor.whiteColor,
       context: context,
@@ -130,44 +172,69 @@ class _LeadListScreenState extends State<LeadListScreen> {
                   ),
                 ),
                 Text(
-                  'Filter by Stage',
+                  'Filter Leads',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 16),
-                ...[
-                  'All',
-                  'New',
-                  'Qualified',
-                  'Proposition',
-                  'Won',
-                  'Lost',
-                  "Today's Expected Closing",
-                  "Tomorrow's Expected Closing",
-                ].map((stage) {
-                  return ListTile(
-                    title: Text(stage),
-                    trailing: Radio<String>(
-                      activeColor: AppColor.secondaryColor,
-                      value: stage,
-                      groupValue: selectedStageFilter,
-                      onChanged: (value) {
-                        Navigator.pop(context);
+                const Text(
+                  'Filter by Type',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  children: [
+                    'All',
+                    'Contact',
+                    'Opportunity',
+                    'Other',
+                  ].map((type) {
+                    return FilterChip(
+                      label: Text(type),
+                      selected: selectedTypeFilter == type,
+                      onSelected: (selected) {
                         setState(() {
-                          selectedStageFilter = value!;
+                          selectedTypeFilter = selected ? type : 'All';
                           applyFilters();
                         });
+                        Navigator.pop(context);
                       },
-                    ),
-                    onTap: () {
-                      Navigator.pop(context);
-                      setState(() {
-                        selectedStageFilter = stage;
-                        applyFilters();
-                      });
-                    },
-                  );
-                }).toList(),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Filter by Priority',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
                 const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  children: [
+                    'All',
+                    'High',
+                    'Medium',
+                    'Low',
+                  ].map((priority) {
+                    return FilterChip(
+                      label: Text(priority),
+                      selected: selectedPriorityFilter == priority,
+                      onSelected: (selected) {
+                        setState(() {
+                          selectedPriorityFilter = selected ? priority : 'All';
+                          applyFilters();
+                        });
+                        Navigator.pop(context);
+                      },
+                    );
+                  }).toList(),
+                ),
               ],
             ),
           ),
@@ -179,19 +246,75 @@ class _LeadListScreenState extends State<LeadListScreen> {
   void showSortOptions() {
     showModalBottomSheet(
       context: context,
-      builder: (context) => Wrap(
-        children: ['Name', 'Date'].map((option) {
-          return ListTile(
-            title: Text('Sort by $option'),
-            onTap: () {
-              Navigator.pop(context);
-              setState(() {
-                sortBy = option;
-                applyFilters();
-              });
-            },
-          );
-        }).toList(),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Sort Leads',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              title: const Text('Name'),
+              trailing: Radio<String>(
+                value: 'Name',
+                groupValue: sortBy,
+                onChanged: (value) {
+                  setState(() {
+                    sortBy = value!;
+                    applyFilters();
+                  });
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+            ListTile(
+              title: const Text('Company'),
+              trailing: Radio<String>(
+                value: 'Company',
+                groupValue: sortBy,
+                onChanged: (value) {
+                  setState(() {
+                    sortBy = value!;
+                    applyFilters();
+                  });
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+            ListTile(
+              title: const Text('Type'),
+              trailing: Radio<String>(
+                value: 'Type',
+                groupValue: sortBy,
+                onChanged: (value) {
+                  setState(() {
+                    sortBy = value!;
+                    applyFilters();
+                  });
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+            ListTile(
+              title: const Text('Priority'),
+              trailing: Radio<String>(
+                value: 'Priority',
+                groupValue: sortBy,
+                onChanged: (value) {
+                  setState(() {
+                    sortBy = value!;
+                    applyFilters();
+                  });
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -206,38 +329,69 @@ class _LeadListScreenState extends State<LeadListScreen> {
   void applyFilters() {
     List<Lead> temp = List.from(leads);
 
-    // Filter by stage
-    if (selectedStageFilter != 'All') {
-      temp = temp.where((lead) => lead.stage == selectedStageFilter).toList();
+    // Filter by type
+    if (selectedTypeFilter != 'All') {
+      temp = temp.where((lead) {
+        final type = lead.type?.toLowerCase() ?? '';
+        final selectedType = selectedTypeFilter.toLowerCase();
+        return type == selectedType;
+      }).toList();
+    }
+
+    // Filter by priority
+    if (selectedPriorityFilter != 'All') {
+      temp = temp.where((lead) {
+        final priority = lead.priority ?? '1';
+        final selectedPriority = getPriorityValue(selectedPriorityFilter);
+        return priority == selectedPriority;
+      }).toList();
     }
 
     // Apply search query
     if (searchQuery.isNotEmpty) {
-      temp = temp
-          .where(
-            (lead) =>
-                lead.name.toLowerCase().contains(searchQuery.toLowerCase()),
-          )
-          .toList();
+      temp = temp.where((lead) {
+        return lead.name.toLowerCase().contains(searchQuery) ||
+            (lead.phone?.toLowerCase().contains(searchQuery) ?? false) ||
+            (lead.email_from?.toLowerCase().contains(searchQuery) ?? false) ||
+            (lead.contact_name?.toLowerCase().contains(searchQuery) ?? false) ||
+            (lead.partner_name?.toLowerCase().contains(searchQuery) ?? false);
+      }).toList();
     }
 
     // Sort
-    if (sortBy == 'Name') {
-      temp.sort(
-        (a, b) =>
-            sortAscending ? a.name.compareTo(b.name) : b.name.compareTo(a.name),
-      );
-    } else if (sortBy == 'Date') {
-      temp.sort(
-        (a, b) {
-          if (a.date == null && b.date == null) return 0;
-          if (a.date == null) return 1;
-          if (b.date == null) return -1;
+    switch (sortBy) {
+      case 'Name':
+        temp.sort((a, b) => sortAscending
+            ? a.name.compareTo(b.name)
+            : b.name.compareTo(a.name));
+        break;
+      case 'Company':
+        temp.sort((a, b) {
+          final aCompany = a.partner_name ?? '';
+          final bCompany = b.partner_name ?? '';
           return sortAscending
-              ? a.date!.compareTo(b.date!)
-              : b.date!.compareTo(a.date!);
-        },
-      );
+              ? aCompany.compareTo(bCompany)
+              : bCompany.compareTo(aCompany);
+        });
+        break;
+      case 'Type':
+        temp.sort((a, b) {
+          final aType = a.type ?? '';
+          final bType = b.type ?? '';
+          return sortAscending
+              ? aType.compareTo(bType)
+              : bType.compareTo(aType);
+        });
+        break;
+      case 'Priority':
+        temp.sort((a, b) {
+          final aPriority = int.tryParse(a.priority ?? '1') ?? 1;
+          final bPriority = int.tryParse(b.priority ?? '1') ?? 1;
+          return sortAscending
+              ? aPriority.compareTo(bPriority)
+              : bPriority.compareTo(aPriority);
+        });
+        break;
     }
 
     setState(() {
@@ -290,7 +444,7 @@ class _LeadListScreenState extends State<LeadListScreen> {
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: Colors.white,
-                      hintText: 'Search',
+                      hintText: 'Search by name, phone, email, company...',
                       prefixIcon: const Icon(Icons.search),
                       contentPadding: const EdgeInsets.symmetric(vertical: 15),
                       enabledBorder: OutlineInputBorder(
@@ -306,7 +460,7 @@ class _LeadListScreenState extends State<LeadListScreen> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.filter_list_alt),
-                  onPressed: showStageFilterBottomSheet,
+                  onPressed: showFilterBottomSheet,
                 ),
                 IconButton(
                   icon: Icon(
@@ -321,7 +475,7 @@ class _LeadListScreenState extends State<LeadListScreen> {
             child: RefreshIndicator(
               onRefresh: _leadList,
               child: isLoading
-                  ? const Loader()
+                  ? const Center(child: Loader())
                   : filteredLeads.isEmpty
                       ? const Center(
                           child: Text(
@@ -335,124 +489,7 @@ class _LeadListScreenState extends State<LeadListScreen> {
                             final lead = filteredLeads[index];
                             return GestureDetector(
                               onTap: () => _openLeadDetails(lead),
-                              child: Card(
-                                color: AppColor.whiteColor,
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 8,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                elevation: 2,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(12),
-                                  child: Row(
-                                    children: [
-                                      CircleAvatar(
-                                        radius: 24,
-                                        backgroundColor: Colors.blue[400],
-                                        child: Text(
-                                          lead.name.isNotEmpty
-                                              ? lead.name[0].toUpperCase()
-                                              : '',
-                                          style: const TextStyle(
-                                            fontSize: 22,
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 14),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Expanded(
-                                                  child: Text(
-                                                    lead.name,
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 16,
-                                                    ),
-                                                  ),
-                                                ),
-                                                Container(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                    horizontal: 10,
-                                                    vertical: 4,
-                                                  ),
-                                                  decoration: BoxDecoration(
-                                                    color: ColorUtils
-                                                        .getStageColor(
-                                                      lead.stage ?? 'New',
-                                                    ),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            8),
-                                                  ),
-                                                  child: Text(
-                                                    lead.stage ?? 'New',
-                                                    style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 12,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              lead.phone!,
-                                              style: const TextStyle(
-                                                color: Colors.black54,
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 8),
-                                            Row(
-                                              children: [
-                                                IconButton(
-                                                  icon: const Icon(
-                                                    Icons.phone,
-                                                    color: Colors.blue,
-                                                    size: 20,
-                                                  ),
-                                                  onPressed: () =>
-                                                      _callLead(lead.phone!),
-                                                ),
-                                                IconButton(
-                                                  icon: const Icon(
-                                                    Icons.message,
-                                                    color: Colors.blue,
-                                                    size: 20,
-                                                  ),
-                                                  onPressed: () {},
-                                                ),
-                                                const Spacer(),
-                                                Text(
-                                                  lead.date != null
-                                                      ? _formatDate(lead.date!)
-                                                      : '',
-                                                  style: TextStyle(
-                                                    color: Colors.grey[600],
-                                                    fontSize: 12,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
+                              child: _buildLeadListItem(lead),
                             );
                           },
                         ),
@@ -467,8 +504,106 @@ class _LeadListScreenState extends State<LeadListScreen> {
       ),
     );
   }
-}
 
-String _formatDate(DateTime date) {
-  return '${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}';
+  Widget _buildLeadListItem(Lead lead) {
+    return Card(
+      color: AppColor.whiteColor,
+      margin: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 8,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 24,
+              backgroundColor: Colors.blue[400],
+              child: Text(
+                lead.name.isNotEmpty ? lead.name[0].toUpperCase() : '',
+                style: const TextStyle(
+                  fontSize: 22,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          lead.name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.blue[100],
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          getPriorityLabel(lead.priority),
+                          style: TextStyle(
+                            color: Colors.blue[800],
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    lead.phone ?? '',
+                    style: const TextStyle(
+                      color: Colors.black54,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.phone,
+                          color: Colors.blue,
+                          size: 20,
+                        ),
+                        onPressed: () => _callLead(lead.phone!),
+                      ),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.message,
+                          color: Colors.blue,
+                          size: 20,
+                        ),
+                        onPressed: () {},
+                      ),
+                      const Spacer(),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

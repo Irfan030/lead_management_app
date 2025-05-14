@@ -14,11 +14,11 @@ class Repository {
 
   Future getLeadById(param) async {
     try {
-      var url = ApiConfig.leadsApi("getById", model: param.model);
-      var response = await ApiService.post(url, param);
-      // var response = await ApiService.post(ApiConfig.leadsApi.getLeads, param);
+      var url = ApiConfig.leadsApi("getById", model: param['model'], id: param['id']);
+      var response = await ApiService.get(url, param['body']);
       return response;
     } catch (e) {
+      print("Error in getLeadById: $e");
       return e;
     }
   }

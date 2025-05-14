@@ -7,13 +7,13 @@ class ApiConfig {
       case "getAll":
         return "/send_request?model=$model";
       case "getById":
-        return "/send_request?model=$model&Id=$id";
+        return "/send_request?model=$model&id=$id";
       case "create":
         return "/send_request?model=$model";
       case "update":
         return "/send_request?model=$model&Id=$id";
       case "delete":
-        return "/send_request?model=$model&Id=$id";
+        return "/send_request?model=$model&id=$id";
       default:
         throw Exception("Invalid action type");
     }

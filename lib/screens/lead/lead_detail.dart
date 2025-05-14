@@ -3,9 +3,6 @@ import 'package:leads_management_app/constant.dart';
 import 'package:leads_management_app/models/lead_model.dart';
 import 'package:leads_management_app/theme/colors.dart';
 import 'package:leads_management_app/theme/size_config.dart';
-import 'package:leads_management_app/widgets/loader.dart';
-import 'package:leads_management_app/widgets/text_button.dart';
-import 'package:leads_management_app/widgets/title_widget.dart';
 
 import '../../Repository/Repository.dart';
 import 'create_lead_screen.dart';
@@ -23,11 +20,16 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   Repository repository = Repository();
+  bool isLoading = false;
+  Lead? detailedLead;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    setState(() {
+      detailedLead = widget.lead;
+    });
   }
 
   @override
@@ -40,7 +42,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false, // Don't show default back button
+        automaticallyImplyLeading: false,
         backgroundColor: AppColor.mainColor,
         elevation: 0,
         title: Text(
@@ -96,7 +98,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.lead.name,
+                        detailedLead?.name ?? widget.lead.name,
                         style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -109,11 +111,13 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: _getStageColor(widget.lead.stage ?? 'New'),
+                          color: _getStageColor(detailedLead?.stage ??
+                              widget.lead.stage ??
+                              'New'),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          widget.lead.stage ?? 'New',
+                          detailedLead?.stage ?? widget.lead.stage ?? 'New',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 14,
@@ -174,7 +178,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
       ),
     );
     if (confirm == true) {
-      var param = {"model": "crm.lead", 'id': widget.lead?.id};
+      var param = {"model": "crm.lead", 'id': widget.lead.id};
       final response = await repository.deleteLead(param);
       print("response delete : ${response}");
       if (response["statusCode"] == 200 &&
@@ -191,6 +195,28 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
   }
 
   Widget _buildGeneralTab() {
+    final lead = detailedLead ?? widget.lead;
+    print("Building General Tab with Lead: $lead");
+
+    String cleanDescription(String? text) {
+      if (text == null) return '';
+      // Remove HTML tags
+      return text.replaceAll(RegExp(r'<[^>]*>'), '');
+    }
+
+    Widget buildPriorityStars(String? priority) {
+      final count = int.tryParse(priority ?? '0') ?? 0;
+      return Row(
+        children: List.generate(3, (index) {
+          return Icon(
+            index < count ? Icons.star : Icons.star_border,
+            color: Colors.amber,
+            size: 20,
+          );
+        }),
+      );
+    }
+
     return Container(
       color: AppColor.scaffoldBackground,
       child: SingleChildScrollView(
@@ -199,7 +225,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Personal Information',
+              'Contact Information',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 15,
@@ -209,14 +235,20 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
             const SizedBox(height: 10),
             _infoCard(
               icon: Icons.person,
-              label: 'Contact Name',
-              value: widget.lead.name,
+              label: 'Name',
+              value: lead.name,
             ),
-            if (widget.lead.phone != null)
+            if (lead.contact_name != null && lead.contact_name!.isNotEmpty)
+              _infoCard(
+                icon: Icons.person_outline,
+                label: 'Contact Person',
+                value: lead.contact_name!,
+              ),
+            if (lead.phone != null && lead.phone!.isNotEmpty)
               _infoCard(
                 icon: Icons.phone,
                 label: 'Phone Number',
-                value: widget.lead.phone!,
+                value: lead.phone!,
                 actions: [
                   IconButton(
                     icon: const Icon(Icons.phone, color: Colors.blue),
@@ -228,27 +260,21 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
                   ),
                 ],
               ),
-            if (widget.lead.email_from != null)
+            if (lead.email_from != null && lead.email_from!.isNotEmpty)
               _infoCard(
                 icon: Icons.email,
                 label: 'Email',
-                value: widget.lead.email_from!,
+                value: lead.email_from!,
               ),
-            if (widget.lead.companyName != null)
+            if (lead.function != null && lead.function!.isNotEmpty)
               _infoCard(
-                icon: Icons.business,
-                label: 'Company Name',
-                value: widget.lead.companyName!,
-              ),
-            if (widget.lead.address != null)
-              _infoCard(
-                icon: Icons.location_on,
-                label: 'Address',
-                value: widget.lead.address!,
+                icon: Icons.work,
+                label: 'Function',
+                value: lead.function!,
               ),
             const SizedBox(height: 16),
             const Text(
-              'Lead Details',
+              'Company Information',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 15,
@@ -256,31 +282,86 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
               ),
             ),
             const SizedBox(height: 10),
-            _infoCard(
-              icon: Icons.label,
-              label: 'Status',
-              value: widget.lead.status.toString().split('.').last,
+            if (lead.partner_name != null && lead.partner_name!.isNotEmpty)
+              _infoCard(
+                icon: Icons.business,
+                label: 'Company Name',
+                value: lead.partner_name!,
+              ),
+            if (lead.website != null && lead.website!.isNotEmpty)
+              _infoCard(
+                icon: Icons.language,
+                label: 'Website',
+                value: lead.website!,
+              ),
+            if (lead.type != null && lead.type!.isNotEmpty)
+              _infoCard(
+                icon: Icons.category,
+                label: 'Type',
+                value: lead.type!,
+              ),
+            if (lead.priority != null && lead.priority!.isNotEmpty)
+              _infoCard(
+                icon: Icons.priority_high,
+                label: 'Priority',
+                value: '',
+                customValue: buildPriorityStars(lead.priority),
+              ),
+            const SizedBox(height: 16),
+            const Text(
+              'Address Information',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+                color: Colors.blue,
+              ),
             ),
-            _infoCard(
-              icon: Icons.local_offer,
-              label: 'Tag',
-              value: widget.lead.tag.toString().split('.').last,
+            const SizedBox(height: 10),
+            if (lead.street != null && lead.street!.isNotEmpty)
+              _infoCard(
+                icon: Icons.location_on,
+                label: 'Street',
+                value: lead.street!,
+              ),
+            if (lead.city != null && lead.city!.isNotEmpty)
+              _infoCard(
+                icon: Icons.location_city,
+                label: 'City',
+                value: lead.city!,
+              ),
+            if (lead.zip != null && lead.zip!.isNotEmpty)
+              _infoCard(
+                icon: Icons.local_post_office,
+                label: 'ZIP Code',
+                value: lead.zip!.trim(),
+              ),
+            const SizedBox(height: 16),
+            const Text(
+              'Additional Information',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+                color: Colors.blue,
+              ),
             ),
-            _infoCard(
-              icon: Icons.source,
-              label: 'Source',
-              value: widget.lead.source.toString().split('.').last,
-            ),
-            _infoCard(
-              icon: Icons.score,
-              label: 'Lead Score',
-              value: widget.lead.leadScore.toString(),
-            ),
-            if (widget.lead.followUpDate != null)
+            const SizedBox(height: 10),
+            if (lead.description != null && lead.description!.isNotEmpty)
+              _infoCard(
+                icon: Icons.description,
+                label: 'Description',
+                value: cleanDescription(lead.description),
+              ),
+            if (lead.stage != null && lead.stage!.isNotEmpty)
+              _infoCard(
+                icon: Icons.label,
+                label: 'Stage',
+                value: lead.stage!,
+              ),
+            if (lead.date != null)
               _infoCard(
                 icon: Icons.calendar_today,
-                label: 'Follow-up Date',
-                value: _formatDate(widget.lead.followUpDate!),
+                label: 'Created Date',
+                value: _formatDate(lead.date!),
               ),
           ],
         ),
@@ -293,6 +374,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
     required String label,
     required String value,
     List<Widget>? actions,
+    Widget? customValue,
   }) {
     return Card(
       color: AppColor.whiteColor,
@@ -317,7 +399,8 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
                     ),
                   ),
                   const SizedBox(height: 2),
-                  Text(value, style: const TextStyle(fontSize: 15)),
+                  customValue ??
+                      Text(value, style: const TextStyle(fontSize: 15)),
                 ],
               ),
             ),

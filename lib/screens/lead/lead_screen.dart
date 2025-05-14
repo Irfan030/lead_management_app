@@ -1,15 +1,9 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:leads_management_app/models/dummy_leads.dart';
 import 'package:leads_management_app/Repository/Repository.dart';
 import 'package:leads_management_app/models/lead_model.dart';
 import 'package:leads_management_app/theme/colors.dart';
-import 'package:leads_management_app/theme/size_config.dart';
 import 'package:leads_management_app/utils/color_utils.dart';
 import 'package:leads_management_app/widgets/loader.dart';
-import 'package:leads_management_app/widgets/text_button_with_icon.dart';
-import 'package:leads_management_app/widgets/title_widget.dart';
 
 import 'create_lead_screen.dart';
 import 'lead_detail.dart';
@@ -45,189 +39,62 @@ class _LeadListScreenState extends State<LeadListScreen> {
     try {
       selectedStageFilter = 'All';
       var body = {
-        "fields": ["name", "phone", "email_from"]
+        "fields": [
+          "name",
+          "phone",
+          "email_from",
+          "contact_name",
+          "partner_name",
+          "description",
+          "street",
+          "city",
+          "zip",
+          "function",
+          "website",
+          "priority",
+          "type",
+        ]
       };
       var param = {"model": "crm.lead", 'body': body};
+
+      print("API Request Parameters: $param");
       var response = await repository.getLeads(param);
+      print("API Response: $response");
 
-      if (response["statusCode"] == 200 &&
-          response['body'] != null &&
-          response['body']['records'] != null) {
-        final rawList = response['body']['records'] as List;
-        final fetchedLeads =
-            rawList.map((item) => Lead.fromJson(item)).toList();
+      if (response != null && response is Map<String, dynamic>) {
+        print("Response type: ${response.runtimeType}");
+        print("Response keys: ${response.keys.toList()}");
 
-        setState(() {
-          leads = fetchedLeads;
-          filteredLeads = List.from(leads);
-        });
+        if (response["statusCode"] == 200 &&
+            response['body'] != null &&
+            response['body']['records'] != null) {
+          final rawList = response['body']['records'] as List;
+          print("Raw Records from API: $rawList");
+
+          final fetchedLeads =
+              rawList.map((item) => Lead.fromJson(item)).toList();
+          print("Parsed Leads: $fetchedLeads");
+
+          setState(() {
+            leads = fetchedLeads;
+            filteredLeads = List.from(leads);
+          });
+        } else {
+          print("Invalid response structure or no records found");
+          print("Response body: ${response['body']}");
+        }
+      } else {
+        print("Invalid response format: $response");
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       print("Error loading leads: $e");
+      print("Stack trace: $stackTrace");
     } finally {
       setState(() {
         isLoading = false;
       });
     }
   }
-
-  // List<Lead> getDummyLeads() {
-  //   return [
-  //     Lead(
-  //       id: 1,
-  //       name: 'Jons Miley',
-  //       phone: '8563412547',
-  //       stage: 'New',
-  //       date: DateTime(2025, 2, 27),
-  //       activities: [
-  //         Activity(
-  //           type: 'Call',
-  //           desc: 'call meeting',
-  //           date: '21-02-2025',
-  //           icon: Icons.phone,
-  //           color: Colors.red,
-  //         ),
-  //         Activity(
-  //           type: 'Meeting',
-  //           desc: 'Meeting with HR',
-  //           date: '24-02-2025',
-  //           icon: Icons.groups,
-  //           color: Colors.blue,
-  //         ),
-  //       ],
-  //       notesList: [
-  //         Note(date: '24-02-2025', desc: 'Lead/Opportunity created'),
-  //         Note(
-  //           date: '21-02-2025',
-  //           desc:
-  //               'Lead Enrichment (based on email address)\nNo company data found based on the email address or email address is one of an email provider. No credit was consumed.',
-  //         ),
-  //       ],
-  //       callLogs: [
-  //         CallLog(
-  //           type: 'Outgoing',
-  //           name: 'Jons Miley',
-  //           datetime: '27-02-2025 17:21:25',
-  //           duration: '0m 5s',
-  //           recording: true,
-  //         ),
-  //       ],
-  //     ),
-  //     Lead(
-  //       id: 2,
-  //       name: "Dixit's Opportunity",
-  //       phone: '9845632175',
-  //       stage: 'Qualified',
-  //       date: DateTime(2025, 2, 27),
-  //       activities: [
-  //         Activity(
-  //           type: 'Call',
-  //           desc: 'Arrange Call For Meeting',
-  //           date: '24-02-2025',
-  //           icon: Icons.phone,
-  //           color: Colors.red,
-  //         ),
-  //         Activity(
-  //           type: 'Email',
-  //           desc: 'Send Email to HR',
-  //           date: '25-02-2025',
-  //           icon: Icons.email,
-  //           color: Colors.green,
-  //         ),
-  //       ],
-  //       notesList: [Note(date: '24-02-2025', desc: 'Lead/Opportunity created')],
-  //       callLogs: [
-  //         CallLog(
-  //           type: 'Outgoing',
-  //           name: "Dixit's Opportunity",
-  //           datetime: '27-02-2025 11:26:48',
-  //           duration: '1',
-  //           recording: false,
-  //         ),
-  //       ],
-  //     ),
-  //     Lead(
-  //       id: 3,
-  //       name: 'Rahul',
-  //       phone: '9915364789',
-  //       stage: 'Proposition',
-  //       date: DateTime(2025, 2, 27),
-  //       activities: [],
-  //       notesList: [],
-  //       callLogs: [],
-  //     ),
-  //     Lead(
-  //       id: 4,
-  //       name: 'Manish Roy',
-  //       phone: '8634597216',
-  //       stage: 'Won',
-  //       date: DateTime(2025, 2, 27),
-  //       activities: [],
-  //       notesList: [],
-  //       callLogs: [],
-  //     ),
-  //     Lead(
-  //       id: 5,
-  //       name: 'Anjali Sharma',
-  //       phone: '7854129630',
-  //       stage: 'New',
-  //       date: DateTime(2025, 2, 28),
-  //       activities: [],
-  //       notesList: [],
-  //       callLogs: [],
-  //     ),
-  //     Lead(
-  //       id: 6,
-  //       name: 'Vikas Patel',
-  //       phone: '9021547836',
-  //       stage: 'Qualified',
-  //       date: DateTime(2025, 2, 28),
-  //       activities: [],
-  //       notesList: [],
-  //       callLogs: [],
-  //     ),
-  //     Lead(
-  //       id: 7,
-  //       name: 'Neha Gupta',
-  //       phone: '9765432180',
-  //       stage: 'Proposition',
-  //       date: DateTime(2025, 3, 1),
-  //       activities: [],
-  //       notesList: [],
-  //       callLogs: [],
-  //     ),
-  //     Lead(
-  //       id: 8,
-  //       name: 'Ramesh Kumar',
-  //       phone: '8897456123',
-  //       stage: 'Negotiation',
-  //       date: DateTime(2025, 3, 1),
-  //       activities: [],
-  //       notesList: [],
-  //       callLogs: [],
-  //     ),
-  //     Lead(
-  //       id: 9,
-  //       name: 'Sonal Singh',
-  //       phone: '9812345678',
-  //       stage: 'Won',
-  //       date: DateTime(2025, 3, 2),
-  //       activities: [],
-  //       notesList: [],
-  //       callLogs: [],
-  //     ),
-  //     Lead(
-  //       id: 10,
-  //       name: 'Amit Joshi',
-  //       phone: '9123456789',
-  //       stage: 'Lost',
-  //       date: DateTime(2025, 3, 2),
-  //       activities: [],
-  //       notesList: [],
-  //       callLogs: [],
-  //     ),
-  //   ];
-  // }
 
   void _searchLead(String query) {
     setState(() {
@@ -454,7 +321,7 @@ class _LeadListScreenState extends State<LeadListScreen> {
             child: RefreshIndicator(
               onRefresh: _leadList,
               child: isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const Loader()
                   : filteredLeads.isEmpty
                       ? const Center(
                           child: Text(
@@ -571,7 +438,7 @@ class _LeadListScreenState extends State<LeadListScreen> {
                                                 Text(
                                                   lead.date != null
                                                       ? _formatDate(lead.date!)
-                                                      : 'N/A',
+                                                      : '',
                                                   style: TextStyle(
                                                     color: Colors.grey[600],
                                                     fontSize: 12,

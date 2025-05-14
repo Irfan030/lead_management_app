@@ -46,12 +46,22 @@ class CallLog {
 class Lead {
   final int? id;
   final String name;
-  final String? address;
   final String? phone;
-  final String? companyName;
   final String? email_from;
-  final String? imageUrl;
+  final String? contact_name;
+  final String? partner_name;
+  final String? description;
+  final String? street;
+  final String? city;
+  final String? zip;
+  final String? function;
+  final String? website;
+  final String? priority;
+  final String? type;
   final String? stage;
+  final String? address;
+  final String? companyName;
+  final String? imageUrl;
   final DateTime? date;
   final LeadStatus? status;
   final LeadTag? tag;
@@ -68,12 +78,22 @@ class Lead {
   Lead({
     this.id,
     required this.name,
-    this.address,
-    required this.phone,
+    this.phone,
     this.email_from,
+    this.contact_name,
+    this.partner_name,
+    this.description,
+    this.street,
+    this.city,
+    this.zip,
+    this.function,
+    this.website,
+    this.priority,
+    this.type,
+    this.stage,
+    this.address,
     this.companyName,
     this.imageUrl,
-    this.stage,
     this.date,
     this.status = LeadStatus.newLead,
     this.tag = LeadTag.cold,
@@ -87,20 +107,43 @@ class Lead {
     this.latitude,
     this.longitude,
   });
+
   factory Lead.fromJson(Map<String, dynamic> json) {
     return Lead(
       id: json['id'],
-      name: json['name'],
-      phone: json['phone'],
-      email_from: json['email_from'] is String ? json['email_from'] : null,
+      name: json['name']?.toString() ?? '',
+      phone: json['phone']?.toString(),
+      email_from: json['email_from']?.toString(),
+      contact_name: json['contact_name']?.toString(),
+      partner_name: json['partner_name']?.toString(),
+      description: json['description']?.toString(),
+      street: json['street']?.toString(),
+      city: json['city']?.toString(),
+      zip: json['zip']?.toString(),
+      function: json['function']?.toString(),
+      website: json['website']?.toString(),
+      priority: json['priority']?.toString(),
+      type: json['type']?.toString(),
+      stage: json['stage']?.toString(),
     );
   }
+
   Map<String, dynamic> toJson() {
     return {
-      // 'id': id,
       'name': name,
       'phone': phone,
       'email_from': email_from,
+      'contact_name': contact_name,
+      'partner_name': partner_name,
+      'description': description,
+      'street': street,
+      'city': city,
+      'zip': zip,
+      'function': function,
+      'website': website,
+      'priority': priority,
+      'type': type,
+      'stage': stage,
     };
   }
 

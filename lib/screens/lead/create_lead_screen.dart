@@ -1,15 +1,9 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:geocoding/geocoding.dart' hide Location;
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:leads_management_app/models/lead_model.dart';
 import 'package:leads_management_app/theme/colors.dart';
 import 'package:leads_management_app/widgets/appbar.dart';
-import 'package:location/location.dart';
 
 import '../../Repository/Repository.dart';
-import '../../constant.dart';
 
 class CreateLeadScreen extends StatefulWidget {
   final Lead? lead;
@@ -22,97 +16,187 @@ class CreateLeadScreen extends StatefulWidget {
 class _CreateLeadScreenState extends State<CreateLeadScreen> {
   Repository repository = Repository();
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _nameController = TextEditingController();
+
+  // Contact Information Controllers
+  final TextEditingController _leadNameController = TextEditingController();
+  final TextEditingController _contactNameController = TextEditingController();
+  final TextEditingController _functionController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
+
+  // Company Information Controllers
   final TextEditingController _companyNameController = TextEditingController();
-  final TextEditingController _addressController = TextEditingController();
-  final TextEditingController _notesController = TextEditingController();
-  final Location _location = Location();
-  LatLng? _selectedLocation;
-  String? _address;
-  bool _isLoadingLocation = false;
-  bool isLoading = false;
-  List<Lead> leads = [];
-  List<Lead> filteredLeads = [];
+  final TextEditingController _websiteController = TextEditingController();
+  final TextEditingController _typeController = TextEditingController();
+  int _priority = 0;
+
+  // Address Information Controllers
+  final TextEditingController _streetController = TextEditingController();
+  final TextEditingController _cityController = TextEditingController();
+  final TextEditingController _zipController = TextEditingController();
+
+  // Additional Information Controllers
+  final TextEditingController _descriptionController = TextEditingController();
 
   String? _stage;
-  DateTime? _date;
-  DateTime? _followUpDate;
-  LeadStatus? _status;
-  LeadTag? _tag;
-  LeadSource? _source;
-  int _leadScore = 0;
-  List<Activity> _activities = [];
-  List<Note> _notesList = [];
-  List<CallLog> _callLogs = [];
+  bool isLoading = false;
 
   @override
   void initState() {
     super.initState();
     if (widget.lead != null) {
       final lead = widget.lead!;
-      _nameController.text = lead.name;
-      _phoneController.text = lead.phone!;
+      _leadNameController.text = lead.name;
+      _contactNameController.text = lead.contact_name ?? '';
+      _functionController.text = lead.function ?? '';
+      _phoneController.text = lead.phone ?? '';
       _emailController.text = lead.email_from ?? '';
-      _companyNameController.text = lead.companyName ?? '';
-      _addressController.text = lead.address ?? '';
+      _companyNameController.text = lead.partner_name ?? '';
+      _websiteController.text = lead.website ?? '';
+      _typeController.text = lead.type ?? '';
+      _priority = int.tryParse(lead.priority ?? '0') ?? 0;
+      _streetController.text = lead.street ?? '';
+      _cityController.text = lead.city ?? '';
+      _zipController.text = lead.zip ?? '';
+      _descriptionController.text = lead.description ?? '';
       _stage = lead.stage;
-      _date = lead.date;
-      _followUpDate = lead.followUpDate;
-      _status = lead.status;
-      _tag = lead.tag;
-      _source = lead.source;
-      _leadScore = lead.leadScore;
-      _notesController.text = lead.notes.isNotEmpty ? lead.notes.first : '';
-      _activities = lead.activities;
-      _notesList = lead.notesList;
-      _callLogs = lead.callLogs;
     }
   }
 
-  Future<void> _getCurrentLocation() async {
-    setState(() => _isLoadingLocation = true);
-    try {
-      final location = await _location.getLocation();
-      final placemarks = await placemarkFromCoordinates(
-        location.latitude!,
-        location.longitude!,
-      );
+  @override
+  void dispose() {
+    _leadNameController.dispose();
+    _contactNameController.dispose();
+    _functionController.dispose();
+    _phoneController.dispose();
+    _emailController.dispose();
+    _companyNameController.dispose();
+    _websiteController.dispose();
+    _typeController.dispose();
+    _streetController.dispose();
+    _cityController.dispose();
+    _zipController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
 
-      if (placemarks.isNotEmpty) {
-        final place = placemarks.first;
-        setState(() {
-          _selectedLocation = LatLng(location.latitude!, location.longitude!);
-          _address = '${place.street}, ${place.locality}, ${place.country}';
-          _addressController.text = _address!;
-        });
+  Future<void> _submitForm() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() => isLoading = true);
+      try {
+        // Build the values map with only allowed fields and only if filled
+        final Map<String, dynamic> values = {};
+        if (_leadNameController.text.trim().isNotEmpty) {
+          values['name'] = _leadNameController.text.trim();
+        }
+        if (_phoneController.text.trim().isNotEmpty) {
+          values['phone'] = _phoneController.text.trim();
+        }
+        if (_emailController.text.trim().isNotEmpty) {
+          values['email_from'] = _emailController.text.trim();
+        }
+        if (_contactNameController.text.trim().isNotEmpty) {
+          values['contact_name'] = _contactNameController.text.trim();
+        }
+        if (_companyNameController.text.trim().isNotEmpty) {
+          values['partner_name'] = _companyNameController.text.trim();
+        }
+        if (_descriptionController.text.trim().isNotEmpty) {
+          values['description'] = _descriptionController.text.trim();
+        }
+        if (_streetController.text.trim().isNotEmpty) {
+          values['street'] = _streetController.text.trim();
+        }
+        if (_cityController.text.trim().isNotEmpty) {
+          values['city'] = _cityController.text.trim();
+        }
+        if (_zipController.text.trim().isNotEmpty) {
+          values['zip'] = _zipController.text.trim();
+        }
+        if (_functionController.text.trim().isNotEmpty) {
+          values['function'] = _functionController.text.trim();
+        }
+        if (_websiteController.text.trim().isNotEmpty) {
+          values['website'] = _websiteController.text.trim();
+        }
+        if (_priority > 0) values['priority'] = _priority.toString();
+        if (_typeController.text.trim().isNotEmpty) {
+          values['type'] = _typeController.text.trim();
+        }
+
+        // The fields list must match the allowed fields for the API
+        final List<String> fields = [
+          'name',
+          'phone',
+          'email_from',
+          'contact_name',
+          'partner_name',
+          'description',
+          'street',
+          'city',
+          'zip',
+          'function',
+          'website',
+          'priority',
+          'type',
+        ];
+
+        final body = {
+          'fields': fields,
+          'values': values,
+        };
+
+        final param = {
+          'model': 'crm.lead',
+          if (widget.lead?.id != null) 'id': widget.lead!.id,
+          'body': body,
+        };
+
+        dynamic response;
+        if (widget.lead != null) {
+          response = await repository.updateLead(param);
+        } else {
+          response = await repository.createLead(param);
+        }
+
+        if (response != null &&
+            response['statusCode'] == 200 &&
+            response['body'] != null &&
+            ((widget.lead == null &&
+                    response['body']['New resource'] is List &&
+                    response['body']['New resource'].isNotEmpty) ||
+                (widget.lead != null &&
+                    response['body']['Updated resource'] is List &&
+                    response['body']['Updated resource'].isNotEmpty))) {
+          if (mounted) {
+            Navigator.pop(context, true);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content: Text(widget.lead == null
+                      ? 'Lead added successfully!'
+                      : 'Lead updated successfully!')),
+            );
+          }
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content: Text(
+                      'Failed to ${widget.lead == null ? 'add' : 'update'} Lead.')),
+            );
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ${e.toString()}')),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() => isLoading = false);
+        }
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error getting location: ${e.toString()}')),
-      );
-    } finally {
-      setState(() => _isLoadingLocation = false);
-    }
-  }
-
-  Future<void> _selectLocationOnMap() async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => LocationPickerScreen(
-          initialLocation: _selectedLocation,
-        ),
-      ),
-    );
-
-    if (result != null) {
-      setState(() {
-        _selectedLocation = result['location'] as LatLng;
-        _address = result['address'] as String;
-        _addressController.text = _address!;
-      });
     }
   }
 
@@ -120,173 +204,133 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-          title: widget.lead == null ? 'Create New Lead' : 'Edit Lead'),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildSectionTitle('Basic Information'),
-              _buildTextField(
-                controller: _nameController,
-                label: 'Name',
-                icon: Icons.person,
-                isRequired: true,
-              ),
-              _buildTextField(
-                controller: _phoneController,
-                label: 'Phone',
-                icon: Icons.phone,
-                isRequired: true,
-                keyboardType: TextInputType.phone,
-              ),
-              _buildTextField(
-                controller: _emailController,
-                label: 'Email',
-                icon: Icons.email,
-                isRequired: true,
-                keyboardType: TextInputType.emailAddress,
-              ),
-              _buildTextField(
-                controller: _companyNameController,
-                label: 'Company Name',
-                icon: Icons.business,
-              ),
-              _buildTextField(
-                controller: _addressController,
-                label: 'Address',
-                icon: Icons.location_on,
-              ),
-              const SizedBox(height: 16),
-              _buildSectionTitle('Lead Details'),
-              _buildDropdown(
-                label: 'Stage',
-                items: const [
-                  'New',
-                  'Contacted',
-                  'Qualified',
-                  'Proposal',
-                  'Negotiation',
-                  'Closed Won',
-                  'Closed Lost'
-                ],
-                value: _stage,
-                onChanged: (value) => setState(() => _stage = value),
-              ),
-              _buildDropdown(
-                label: 'Status',
-                items: LeadStatus.values
-                    .map((e) => e.toString().split('.').last)
-                    .toList(),
-                value: _status?.toString().split('.').last,
-                onChanged: (value) => setState(() {
-                  _status = LeadStatus.values.firstWhere(
-                    (e) => e.toString().split('.').last == value,
-                  );
-                }),
-              ),
-              _buildDropdown(
-                label: 'Tag',
-                items: LeadTag.values
-                    .map((e) => e.toString().split('.').last)
-                    .toList(),
-                value: _tag?.toString().split('.').last,
-                onChanged: (value) => setState(() {
-                  _tag = LeadTag.values.firstWhere(
-                    (e) => e.toString().split('.').last == value,
-                  );
-                }),
-              ),
-              _buildDropdown(
-                label: 'Source',
-                items: LeadSource.values
-                    .map((e) => e.toString().split('.').last)
-                    .toList(),
-                value: _source?.toString().split('.').last,
-                onChanged: (value) => setState(() {
-                  _source = LeadSource.values.firstWhere(
-                    (e) => e.toString().split('.').last == value,
-                  );
-                }),
-              ),
-              const SizedBox(height: 16),
-              _buildSectionTitle('Dates'),
-              _buildDateField(
-                label: 'Date',
-                date: _date,
-                onDateSelected: (date) => setState(() => _date = date),
-              ),
-              _buildDateField(
-                label: 'Follow-up Date',
-                date: _followUpDate,
-                onDateSelected: (date) => setState(() => _followUpDate = date),
-                isOptional: true,
-              ),
-              const SizedBox(height: 16),
-              _buildSectionTitle('Location'),
-              Row(
+        title: widget.lead == null ? 'Create New Lead' : 'Edit Lead',
+      ),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _addressController,
-                      decoration: InputDecoration(
-                        labelText: 'Address',
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                        suffixIcon: IconButton(
-                          icon: const Icon(Icons.location_on),
-                          onPressed:
-                              _isLoadingLocation ? null : _getCurrentLocation,
+                  _buildSectionTitle('Lead Information'),
+                  _buildTextField(
+                    controller: _leadNameController,
+                    label: 'Lead Name',
+                    icon: Icons.label_important_outline_rounded,
+                    isRequired: true,
+                  ),
+                  _buildStarRating(),
+                  _buildSectionTitle('Company Information'),
+                  _buildTextField(
+                    controller: _companyNameController,
+                    label: 'Company Name',
+                    icon: Icons.business,
+                  ),
+                  _buildTextField(
+                    controller: _websiteController,
+                    label: 'Website',
+                    icon: Icons.language,
+                    keyboardType: TextInputType.url,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildSectionTitle('Address Information'),
+                  _buildTextField(
+                    controller: _streetController,
+                    label: 'Street',
+                    icon: Icons.location_on,
+                  ),
+                  _buildTextField(
+                    controller: _cityController,
+                    label: 'City',
+                    icon: Icons.location_city,
+                  ),
+                  _buildTextField(
+                    controller: _zipController,
+                    label: 'ZIP Code',
+                    icon: Icons.local_post_office,
+                    keyboardType: TextInputType.number,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildSectionTitle('Contact Information'),
+                  _buildTextField(
+                    controller: _contactNameController,
+                    label: 'Contact Name',
+                    icon: Icons.person_outline,
+                  ),
+                  _buildTextField(
+                    controller: _functionController,
+                    label: 'Function',
+                    icon: Icons.badge,
+                  ),
+                  _buildTextField(
+                    controller: _emailController,
+                    label: 'Email',
+                    icon: Icons.email,
+                    isRequired: true,
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  _buildTextField(
+                    controller: _phoneController,
+                    label: 'Phone',
+                    icon: Icons.phone,
+                    isRequired: true,
+                    keyboardType: TextInputType.phone,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildSectionTitle('Additional Information'),
+                  _buildTextField(
+                    controller: _descriptionController,
+                    label: 'Description',
+                    icon: Icons.description,
+                    maxLines: 3,
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: isLoading ? null : _submitForm,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        backgroundColor: AppColor.mainColor,
+                      ),
+                      child: Text(
+                        widget.lead == null ? 'Create Lead' : 'Update Lead',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
                         ),
                       ),
-                      readOnly: true,
-                      onTap: _selectLocationOnMap,
                     ),
                   ),
                 ],
               ),
-              if (_isLoadingLocation)
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-              const SizedBox(height: 16),
-              _buildSectionTitle('Additional Information'),
-              _buildTextField(
-                controller: _notesController,
-                label: 'Notes',
-                icon: Icons.note,
-                maxLines: 3,
-              ),
-              _buildSlider(
-                label: 'Lead Score',
-                value: _leadScore,
-                onChanged: (value) =>
-                    setState(() => _leadScore = value.toInt()),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _createLead,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColor.mainColor,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: Text(
-                    widget.lead == null ? 'Create' : 'Update',
-                    style: const TextStyle(fontSize: 16, color: Colors.white),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+          if (isLoading)
+            Container(
+              color: Colors.black.withOpacity(0.3),
+              child: const Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text(
+                      'Please wait...',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -297,9 +341,9 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
       child: Text(
         title,
         style: const TextStyle(
-          fontSize: 18,
+          fontSize: 16,
           fontWeight: FontWeight.bold,
-          color: AppColor.secondaryColor,
+          color: Colors.blue,
         ),
       ),
     );
@@ -310,38 +354,41 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
     required String label,
     required IconData icon,
     bool isRequired = false,
-    TextInputType keyboardType = TextInputType.text,
+    TextInputType? keyboardType,
     int maxLines = 1,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: TextFormField(
         controller: controller,
-        keyboardType: keyboardType,
         decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: Icon(icon, color: AppColor.secondaryColor),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-          focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: AppColor.secondaryColor),
+          labelText: label + (isRequired ? ' *' : ''),
+          prefixIcon: Icon(
+            icon,
+            color: AppColor.mainColor,
+          ),
+          border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
           ),
         ),
+        keyboardType: keyboardType,
         maxLines: maxLines,
         validator: (value) {
-          if (isRequired && (value == null || value.trim().isEmpty)) {
-            return '$label is required';
+          if (isRequired && (value == null || value.isEmpty)) {
+            return 'Please enter $label';
           }
-          if (label == 'Email' && value != null && value.trim().isNotEmpty) {
-            final emailRegex = RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$');
-            if (!emailRegex.hasMatch(value.trim())) {
-              return 'Enter a valid email address';
+          if (keyboardType == TextInputType.emailAddress &&
+              value != null &&
+              value.isNotEmpty) {
+            if (!RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+              return 'Please enter a valid email';
             }
           }
-          if (label == 'Phone' && value != null && value.trim().isNotEmpty) {
-            final phone = value.trim();
-            if (!RegExp(r'^\d{10}$').hasMatch(phone)) {
-              return 'Phone must be 10 digits';
+          if (keyboardType == TextInputType.phone &&
+              value != null &&
+              value.isNotEmpty) {
+            if (!RegExp(r'^\+?[\d\s-]{10,}$').hasMatch(value)) {
+              return 'Please enter a valid phone number';
             }
           }
           return null;
@@ -350,314 +397,21 @@ class _CreateLeadScreenState extends State<CreateLeadScreen> {
     );
   }
 
-  Widget _buildDropdown({
-    required String label,
-    required List<String> items,
-    required String? value,
-    required Function(String?) onChanged,
-  }) {
+  Widget _buildStarRating() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: DropdownButtonFormField<String>(
-        value: value,
-        decoration: InputDecoration(
-          labelText: label,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-          focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: AppColor.secondaryColor),
-            borderRadius: BorderRadius.circular(8),
-          ),
-        ),
-        icon: const Icon(Icons.arrow_drop_down, color: AppColor.secondaryColor),
-        items: items.map((item) {
-          return DropdownMenuItem(value: item, child: Text(item));
-        }).toList(),
-        onChanged: onChanged,
-      ),
-    );
-  }
-
-  Widget _buildDateField({
-    required String label,
-    required DateTime? date,
-    required Function(DateTime) onDateSelected,
-    bool isOptional = false,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
-        onTap: () async {
-          final picked = await showDatePicker(
-            context: context,
-            initialDate: date ?? DateTime.now(),
-            firstDate: DateTime(2020),
-            lastDate: DateTime(2100),
-          );
-          if (picked != null) onDateSelected(picked);
-        },
-        child: InputDecorator(
-          decoration: InputDecoration(
-            labelText: label,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            focusedBorder: OutlineInputBorder(
-              borderSide: const BorderSide(color: AppColor.secondaryColor),
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                date != null ? _formatDate(date) : 'Select date',
-                style: TextStyle(
-                  color: date != null ? Colors.black : Colors.grey,
-                ),
-              ),
-              const Icon(Icons.calendar_today, color: AppColor.secondaryColor),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSlider({
-    required String label,
-    required int value,
-    required Function(double) onChanged,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '$label: $value',
-          style: const TextStyle(color: AppColor.secondaryColor),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: GestureDetector(
-                onTapDown: (details) {
-                  final RenderBox box = context.findRenderObject() as RenderBox;
-                  final double width = box.size.width;
-                  final double dx = details.localPosition.dx;
-                  final double newValue = (dx / width) * 100;
-                  onChanged(newValue.clamp(0.0, 100.0));
-                },
-                child: Container(
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                  child: Stack(
-                    children: [
-                      Container(
-                        width:
-                            (value / 100) * MediaQuery.of(context).size.width,
-                        decoration: BoxDecoration(
-                          color: AppColor.secondaryColor,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                      Positioned(
-                        left:
-                            (value / 100) * MediaQuery.of(context).size.width -
-                                8,
-                        child: Container(
-                          width: 16,
-                          height: 16,
-                          decoration: const BoxDecoration(
-                            color: AppColor.secondaryColor,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Future<void> _createLead() async {
-    isLoading = true;
-    // try {
-    final random = Random();
-    if (_formKey.currentState!.validate()) {
-      final newLead = Lead(
-        name: _nameController.text.trim(),
-        phone: _phoneController.text.trim(),
-        email_from: _emailController.text.trim(),
-        companyName: _companyNameController.text.trim(),
-        address: _addressController.text.trim(),
-        stage: _stage,
-        date: _date,
-        status: _status,
-        tag: _tag,
-        source: _source,
-        notes: _notesController.text.trim().isNotEmpty
-            ? [_notesController.text.trim()]
-            : [],
-        followUpDate: _followUpDate,
-        leadScore: _leadScore,
-        activities: _activities,
-        notesList: _notesList,
-        callLogs: _callLogs,
-        latitude: _selectedLocation?.latitude,
-        longitude: _selectedLocation?.longitude,
-      );
-      var bodyy = {
-        "fields": [
-          "name",
-          "phone",
-          "email_from",
-          "contact_name",
-          "partner_name",
-          "description",
-          "street",
-          "city",
-          "zip",
-          "function",
-          "website",
-          "priority",
-          "type"
-        ],
-        "values": newLead.toJson()
-      };
-      var param = {"model": "crm.lead", 'id': widget.lead?.id, 'body': bodyy};
-      if (widget.lead != null) {
-        final response = await repository.updateLead(param);
-        if (response["statusCode"] == 200 &&
-            response['body'] != null &&
-            response['body']['Updated resource'] is List &&
-            response['body']['Updated resource'].isNotEmpty) {
-          Navigator.pop(context, true);
-          AppData.showSnackBar(context, 'Lead updated successfully!');
-          return;
-        }
-      } else {
-        final response = await repository.createLead(param);
-        if (response["statusCode"] == 200 &&
-            response['body'] != null &&
-            response['body']['New resource'] is List &&
-            response['body']['New resource'].isNotEmpty) {
-          Navigator.pop(context, true);
-          AppData.showSnackBar(context, 'Lead added successfully!');
-          return;
-        } else {
-          AppData.showSnackBar(context, 'Failed to add Lead.');
-          return;
-        }
-      }
-    }
-    // } catch (e) {
-    //   print("Error loading leads: $e");
-    // } finally {
-    //   setState(() {
-    //     isLoading = false;
-    //   });
-    // }
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}';
-  }
-}
-
-class LocationPickerScreen extends StatefulWidget {
-  final LatLng? initialLocation;
-
-  const LocationPickerScreen({Key? key, this.initialLocation})
-      : super(key: key);
-
-  @override
-  State<LocationPickerScreen> createState() => _LocationPickerScreenState();
-}
-
-class _LocationPickerScreenState extends State<LocationPickerScreen> {
-  late GoogleMapController _mapController;
-  LatLng? _selectedLocation;
-  String? _address;
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedLocation = widget.initialLocation;
-  }
-
-  Future<void> _getAddressFromLocation(LatLng location) async {
-    try {
-      final placemarks = await placemarkFromCoordinates(
-        location.latitude,
-        location.longitude,
-      );
-      if (placemarks.isNotEmpty) {
-        final place = placemarks.first;
-        setState(() {
-          _address = '${place.street}, ${place.locality}, ${place.country}';
-        });
-      }
-    } catch (e) {}
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Select Location'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.check),
-            onPressed: _selectedLocation != null
-                ? () => Navigator.pop(context, {
-                      'location': _selectedLocation,
-                      'address': _address,
-                    })
-                : null,
-          ),
-        ],
-      ),
-      body: Stack(
+      child: Row(
         children: [
-          GoogleMap(
-            onMapCreated: (controller) => _mapController = controller,
-            initialCameraPosition: CameraPosition(
-              target: _selectedLocation ?? const LatLng(-26.2041, 28.0473),
-              zoom: 15,
-            ),
-            onTap: (LatLng location) {
-              setState(() {
-                _selectedLocation = location;
-              });
-              _getAddressFromLocation(location);
-            },
-            markers: _selectedLocation != null
-                ? {
-                    Marker(
-                      markerId: const MarkerId('selected_location'),
-                      position: _selectedLocation!,
-                    ),
-                  }
-                : {},
-          ),
-          if (_address != null)
-            Positioned(
-              bottom: 16,
-              left: 16,
-              right: 16,
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(_address!),
-                ),
+          const Text('Priority:  '),
+          ...List.generate(3, (index) {
+            return IconButton(
+              icon: Icon(
+                index < _priority ? Icons.star : Icons.star_border,
+                color: Colors.amber,
               ),
-            ),
+              onPressed: () => setState(() => _priority = index + 1),
+            );
+          }),
         ],
       ),
     );

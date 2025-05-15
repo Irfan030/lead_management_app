@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:leads_management_app/constant.dart';
+
 import 'header_provider.dart'; // Your header class
 
 class ApiService {
@@ -118,21 +119,39 @@ class ApiService {
 
   static Future<dynamic> delete(String endpoint) async {
     final fullUrl = '$baseUrl$endpoint';
-    // _logRequest('DELETE', fullUrl, null);
     try {
-      final response = await _dio.delete(endpoint);
-      // _logResponse(response);
-      // return response.data;
-      if (response.data.toString().contains('<html>')) {
-        return {'body': response.data};
+      final response = await _dio.delete(fullUrl);
+      final data = response.data;
+
+      // Handle HTML error responses gracefully
+      if (data.toString().contains('<html>')) {
+        return {
+          'body': {
+            'error': 'Unexpected HTML response',
+            'content': data.toString()
+          },
+          'statusCode': response.statusCode ?? 500,
+        };
       }
+
+      final body = data is String ? jsonDecode(data) : data;
+
       return {
-        'body': jsonDecode(response.data),
+        'body': body,
         'headers': response.headers.map,
         'statusCode': response.statusCode,
       };
     } on DioException catch (e) {
-      _handleError(e);
+      return {
+        'body': {'error': e.message},
+        'statusCode': e.response?.statusCode ?? 500,
+      };
+    } catch (e) {
+      // Handle jsonDecode or any other unexpected errors
+      return {
+        'body': {'error': e.toString()},
+        'statusCode': 500,
+      };
     }
   }
 

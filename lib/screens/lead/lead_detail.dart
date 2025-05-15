@@ -180,16 +180,19 @@ class _LeadDetailScreenState extends State<LeadDetailScreen>
     if (confirm == true) {
       var param = {"model": "crm.lead", 'id': widget.lead.id};
       final response = await repository.deleteLead(param);
-      print("response delete : ${response}");
-      if (response["statusCode"] == 200 &&
-          response['body'] != null &&
-          response['body']['Resource deleted'] is List &&
+      print("response delete : $response");
+
+      if (response is Map &&
+          response["statusCode"] == 200 &&
+          response['body']?['Resource deleted'] is List &&
           response['body']['Resource deleted'].isNotEmpty) {
         Navigator.pop(context, 'delete');
         AppData.showSnackBar(context, 'Lead Deleted successfully!');
-        return;
       } else {
-        AppData.showSnackBar(context, 'Failed to delete Lead.');
+        AppData.showSnackBar(
+          context,
+          'Failed to delete Lead.\n${response['body']?['error'] ?? 'Unknown error'}',
+        );
       }
     }
   }

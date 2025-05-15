@@ -14,7 +14,8 @@ class Repository {
 
   Future getLeadById(param) async {
     try {
-      var url = ApiConfig.leadsApi("getById", model: param['model'], id: param['id']);
+      var url =
+          ApiConfig.leadsApi("getById", model: param['model'], id: param['id']);
       var response = await ApiService.get(url, param['body']);
       return response;
     } catch (e) {
@@ -37,7 +38,6 @@ class Repository {
     try {
       var url =
           ApiConfig.leadsApi("update", model: param['model'], id: param['id']);
-      print("url : ${url}");
       var response = await ApiService.put(url, param['body']);
       return response;
     } catch (e) {
@@ -51,7 +51,6 @@ class Repository {
       var url =
           ApiConfig.leadsApi("delete", model: param['model'], id: param['id']);
       var response = await ApiService.delete(url);
-      // var response = await ApiService.post(ApiConfig.leadsApi.getLeads, param);
       return response;
     } catch (e) {
       return e;

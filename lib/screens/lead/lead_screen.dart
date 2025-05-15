@@ -67,20 +67,20 @@ class _LeadListScreenState extends State<LeadListScreen> {
         print("Response type: ${response.runtimeType}");
         print("Response keys: ${response.keys.toList()}");
 
-        if (response["statusCode"] == 200 &&
-            response['body'] != null &&
-            response['body']['records'] != null) {
-          final rawList = response['body']['records'] as List;
+      if (response["statusCode"] == 200 &&
+          response['body'] != null &&
+          response['body']['records'] != null) {
+        final rawList = response['body']['records'] as List;
           print("Raw Records from API: $rawList");
 
-          final fetchedLeads =
-              rawList.map((item) => Lead.fromJson(item)).toList();
+        final fetchedLeads =
+            rawList.map((item) => Lead.fromJson(item)).toList();
           print("Parsed Leads: $fetchedLeads");
 
-          setState(() {
-            leads = fetchedLeads;
-            filteredLeads = List.from(leads);
-          });
+        setState(() {
+          leads = fetchedLeads;
+          filteredLeads = List.from(leads);
+        });
         } else {
           print("Invalid response structure or no records found");
           print("Response body: ${response['body']}");
@@ -187,7 +187,7 @@ class _LeadListScreenState extends State<LeadListScreen> {
                 Wrap(
                   spacing: 8,
                   children: [
-                    'All',
+                  'All',
                     'Contact',
                     'Opportunity',
                     'Other',
@@ -226,14 +226,14 @@ class _LeadListScreenState extends State<LeadListScreen> {
                       label: Text(priority),
                       selected: selectedPriorityFilter == priority,
                       onSelected: (selected) {
-                        setState(() {
+                      setState(() {
                           selectedPriorityFilter = selected ? priority : 'All';
-                          applyFilters();
-                        });
+                        applyFilters();
+                      });
                         Navigator.pop(context);
-                      },
-                    );
-                  }).toList(),
+                    },
+                  );
+                }).toList(),
                 ),
               ],
             ),
@@ -295,7 +295,7 @@ class _LeadListScreenState extends State<LeadListScreen> {
                     sortBy = value!;
                     applyFilters();
                   });
-                  Navigator.pop(context);
+              Navigator.pop(context);
                 },
               ),
             ),
@@ -305,10 +305,10 @@ class _LeadListScreenState extends State<LeadListScreen> {
                 value: 'Priority',
                 groupValue: sortBy,
                 onChanged: (value) {
-                  setState(() {
+              setState(() {
                     sortBy = value!;
-                    applyFilters();
-                  });
+                applyFilters();
+              });
                   Navigator.pop(context);
                 },
               ),
@@ -507,102 +507,102 @@ class _LeadListScreenState extends State<LeadListScreen> {
 
   Widget _buildLeadListItem(Lead lead) {
     return Card(
-      color: AppColor.whiteColor,
-      margin: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 8,
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            CircleAvatar(
-              radius: 24,
-              backgroundColor: Colors.blue[400],
-              child: Text(
+                                color: AppColor.whiteColor,
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                elevation: 2,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Row(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 24,
+                                        backgroundColor: Colors.blue[400],
+                                        child: Text(
                 lead.name.isNotEmpty ? lead.name[0].toUpperCase() : '',
-                style: const TextStyle(
-                  fontSize: 22,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
+                                          style: const TextStyle(
+                                            fontSize: 22,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 14),
+                                      Expanded(
+                                        child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          lead.name,
-                          style: const TextStyle(
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    lead.name,
+                                                    style: const TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                      Container(
+                                                      fontSize: 16,
+                                                    ),
+                                                  ),
+                                                ),
+                                                Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
+                                                    vertical: 4,
+                                                  ),
+                                                  decoration: BoxDecoration(
                           color: Colors.blue[100],
                           borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
+                                                  ),
+                                                  child: Text(
                           getPriorityLabel(lead.priority),
                           style: TextStyle(
                             color: Colors.blue[800],
-                            fontSize: 12,
+                                                      fontSize: 12,
                             fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
                     lead.phone ?? '',
-                    style: const TextStyle(
-                      color: Colors.black54,
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(
-                          Icons.phone,
-                          color: Colors.blue,
-                          size: 20,
-                        ),
+                                              style: const TextStyle(
+                                                color: Colors.black54,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Row(
+                                              children: [
+                                                IconButton(
+                                                  icon: const Icon(
+                                                    Icons.phone,
+                                                    color: Colors.blue,
+                                                    size: 20,
+                                                  ),
                         onPressed: () => _callLead(lead.phone!),
-                      ),
-                      IconButton(
-                        icon: const Icon(
-                          Icons.message,
-                          color: Colors.blue,
-                          size: 20,
-                        ),
-                        onPressed: () {},
-                      ),
-                      const Spacer(),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+                                                ),
+                                                IconButton(
+                                                  icon: const Icon(
+                                                    Icons.message,
+                                                    color: Colors.blue,
+                                                    size: 20,
+                                                  ),
+                                                  onPressed: () {},
+                                                ),
+                                                const Spacer(),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
       ),
     );
   }
